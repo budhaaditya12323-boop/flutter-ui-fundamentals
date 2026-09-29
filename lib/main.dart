@@ -4,9 +4,8 @@ const String studentName = 'I Putu Budha Aditya';
 const String studentId = '2415051006';
 
 void main() {
-  runApp(const MyApp());
-}
-
+  runApp(const MyApp());}
+  
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -69,6 +68,17 @@ class MyApp extends StatelessWidget {
                       Icon(Icons.code, size: 50),
                     ],
                   ),
+                ),
+              ),
+              SizedBox(height: 20),
+              SizedBox(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: const [
+                    Column(children: [Text('30'), Text('Widget')]),
+                    Column(children: [Text('15'), Text('Layout')]), // I Putu Budha Aditya - 2415051006
+                    Column(children: [Text('0'), Text('State')]),
+                  ],
                 ),
               ),
             ],
