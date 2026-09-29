@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 void main() {
   runApp(const MyApp());
 }
+const String studentName = 'I Putu Budha Aditya';
+const String studentId = '2415051006';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -30,7 +32,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'I Putu Budha Aditya_2415051006'),
     );
   }
 }
@@ -104,6 +106,8 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: .center,
           children: [
+            Text(studentName),
+            Text(studentId),
             const Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
