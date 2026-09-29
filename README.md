@@ -1,17 +1,23 @@
-# flutter_ui_fundamentals
+# Flutter UI Fundamentals
 
-A new Flutter project.
+Proyek ini dibuat sebagai ruang latihan untuk memahami konsep dasar pembuatan User Interface (UI) pada aplikasi mobile menggunakan framework Flutter.
 
-## Getting Started
+## Identitas Pengembang
+* **Nama**  : I Putu Budha Aditya
+* **NIM**   : 2415051006
+* **Kelas** : PTI 5A
 
-This project is a starting point for a Flutter application.
+## Tentang Aplikasi
+* **Teknologi** : Flutter & Dart
+* **Tujuan**    : Latihan pembuatan layout, widget, dan navigasi dasar pada mobile apps.
+* **Lingkungan**: Linux Mint 22.2 Cinnamon
 
-A few resources to get you started if this is your first Flutter project:
+## Cara Menjalankan Proyek
+1. Pastikan Flutter SDK sudah terinstal di Device masing-masing
+2. Jalankan perintah berikut di terminal:
+   ```bash
+   flutter pub get
+   flutter run
+   ```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
