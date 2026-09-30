@@ -7,8 +7,27 @@ void main() {
   runApp(const MyApp());
 }
 
+Widget buildStatCard(String value, String label, IconData icon) {
+  return Expanded(
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Icon(icon),
+            const SizedBox(height: 6),
+            Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(label),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +48,6 @@ class MyApp extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
                 // ─── CARD 1: PROFIL ───
                 Card(
                   child: Padding(
@@ -96,10 +114,10 @@ class MyApp extends StatelessWidget {
                       width: 350,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          Column(children: [Text('30'), Text('Widget')]),
-                          Column(children: [Text('15'), Text('Layout')]),
-                          Column(children: [Text('0'), Text('State')]),
+                        children: [
+                          buildStatCard('30', 'Widget', Icons.widgets),
+                          buildStatCard('15', 'Layout', Icons.view_quilt),
+                          buildStatCard('0', 'State', Icons.toggle_on),
                         ],
                       ),
                     ),
