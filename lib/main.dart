@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
-const String studentName = 'I Putu Budha Aditya';
-const String studentId = '2415051006';
+void main() {
+  runApp(const MyApp());
+}
 
-// ─── Fungsi baca JSON ───
+// ─── Baca JSON ───
 Future<Map<String, dynamic>> loadStudentData() async {
   final jsonString = await rootBundle.loadString(
     'assets/data/student_data.json',
@@ -13,11 +14,7 @@ Future<Map<String, dynamic>> loadStudentData() async {
   return jsonDecode(jsonString) as Map<String, dynamic>;
 }
 
-void main() {
-  runApp(const MyApp());
-}
-
-// ─── MyApp — root ───
+// ─── MyApp ───
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -25,12 +22,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const DashboardPage(),   // ← ganti ke DashboardPage
+      home: const DashboardPage(),
     );
   }
 }
 
-// ─── DashboardPage — StatefulWidget dengan FutureBuilder ───
+// ─── DashboardPage — StatefulWidget + FutureBuilder ───
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
@@ -44,7 +41,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    studentFuture = loadStudentData();   // ← sekali saja
+    studentFuture = loadStudentData();
   }
 
   @override
@@ -53,7 +50,7 @@ class _DashboardPageState extends State<DashboardPage> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text(
-          'Flutter UI Fundamentals',
+          'Learning Dashboard',                          // ← judul baru
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
         ),
         centerTitle: true,
@@ -62,26 +59,32 @@ class _DashboardPageState extends State<DashboardPage> {
         future: studentFuture,
         builder: (context, snapshot) {
 
-          // 1. LOADING
+          // ─── LOADING ───
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // 2. ERROR
+          // ─── ERROR ───
           if (snapshot.hasError) {
             return Center(
               child: Text('Gagal memuat data: ${snapshot.error}'),
             );
           }
 
-          // 3. DATA
+          // ─── DATA ───
           final data = snapshot.data!;
           final student = data['student'] as Map<String, dynamic>;
           final courses = data['courses'] as List<dynamic>;
 
           final String nim = student['nim'] as String;
           final String nama = student['name'] as String;
+          final String program = student['program'] as String? ?? '-';
+
           final int selesai = courses.where((c) => c['done'] == true).length;
+          final int totalSks = courses.fold<int>(
+            0,
+            (sum, c) => sum + (c['credits'] as int),
+          );
 
           return SingleChildScrollView(
             child: Center(
@@ -91,73 +94,27 @@ class _DashboardPageState extends State<DashboardPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
 
-                    // ─── CARD 1: PROFIL ───
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          spacing: 20,
-                          children: [
-                            const CircleAvatar(
-                              radius: 50,
-                              backgroundImage: AssetImage('assets/images/profile.jpeg'),
-                            ),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(nama, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
-                                Text(nim, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                    // ─── PROFIL ───
+                    ProfileCard(
+                      nama: nama,
+                      nim: nim,
+                      program: program,
                     ),
+                    const SizedBox(height: 16),
 
-                    // ─── CARD 2: DESKRIPSI ───
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: SizedBox(
-                          width: 350,
-                          child: Row(
-                            spacing: 10,
-                            children: [
-                              const Expanded(
-                                child: Text(
-                                  'Saya memiliki minat di pemrograman mobile dan mendalami teknologi flutter',
-                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                                  textAlign: TextAlign.justify,
-                                ),
-                              ),
-                              const Icon(Icons.code, size: 50),
-                            ],
-                          ),
-                        ),
-                      ),
+                    // ─── SUMMARY (2 card: topik & SKS) ───
+                    SummaryRow(
+                      totalTopik: courses.length,
+                      totalSks: totalSks,
+                      selesai: selesai,
                     ),
+                    const SizedBox(height: 16),
 
-                    // ─── CARD 3: STATISTIK ───
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: SizedBox(
-                          width: 350,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              buildStatCard(courses.length.toString(), 'Topik', Icons.book),
-                              buildStatCard(selesai.toString(), 'Selesai', Icons.check_circle),
-                              buildStatCard((courses.length - selesai).toString(), 'Belum', Icons.schedule),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                    // ─── LIST COURSES ───
+                    CourseList(courses: courses),
+                    const SizedBox(height: 16),
 
-                    // ─── CARD 4: GREETING ───
+                    // ─── GREETING (StatefulWidget) ───
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -167,47 +124,6 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
                     ),
-
-                    // ─── CARD 5: LIST COURSES DARI JSON ───
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: SizedBox(
-                          width: 350,
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Text('$nim - $nama'),
-                              ),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: courses.length,
-                                itemBuilder: (context, index) {
-                                  final course = courses[index] as Map<String, dynamic>;
-                                  final bool done = course['done'] == true;
-                                  return ListTile(
-                                    leading: Icon(
-                                      done ? Icons.check_circle : Icons.circle_outlined,
-                                      color: done ? Colors.green : Colors.grey,
-                                    ),
-                                    title: Text(course['title'] as String),
-                                    subtitle: Text(course['code'] as String),
-                                    trailing: Text(
-                                      done ? 'Selesai' : 'Belum',
-                                      style: TextStyle(color: done ? Colors.green : Colors.grey),
-                                    ),
-                                  );
-                                },
-                              ),
-                              Text('$selesai dari ${courses.length} topik selesai!'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
                   ],
                 ),
               ),
@@ -219,7 +135,150 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-// ─── GreetingCard — StatefulWidget (dipindah ke parameter) ───
+// ─── REUSABLE 1: ProfileCard ───
+class ProfileCard extends StatelessWidget {
+  final String nama;
+  final String nim;
+  final String program;
+
+  const ProfileCard({
+    super.key,
+    required this.nama,
+    required this.nim,
+    required this.program,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 20,
+          children: [
+            const CircleAvatar(
+              radius: 50,
+              backgroundImage: AssetImage('assets/images/profile.jpeg'),
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(nama, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                Text(nim, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
+                Text(program, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── REUSABLE 2: SummaryRow ───
+class SummaryRow extends StatelessWidget {
+  final int totalTopik;
+  final int totalSks;
+  final int selesai;
+
+  const SummaryRow({
+    super.key,
+    required this.totalTopik,
+    required this.totalSks,
+    required this.selesai,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 350,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          buildStatCard(totalTopik.toString(), 'Topik', Icons.book),
+          buildStatCard(totalSks.toString(), 'SKS', Icons.school),
+          buildStatCard(selesai.toString(), 'Selesai', Icons.check_circle),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Reusable function: buildStatCard ───
+Widget buildStatCard(String value, String label, IconData icon) {
+  return Expanded(
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Icon(icon),
+            const SizedBox(height: 6),
+            Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(label),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+// ─── REUSABLE 3: CourseList ───
+class CourseList extends StatelessWidget {
+  final List<dynamic> courses;
+
+  const CourseList({super.key, required this.courses});
+
+  @override
+  Widget build(BuildContext context) {
+    final int selesai = courses.where((c) => c['done'] == true).length;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SizedBox(
+          width: 350,
+          child: Column(
+            children: [
+              Text(
+                '$selesai dari ${courses.length} topik selesai',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: courses.length,
+                itemBuilder: (context, index) {
+                  final course = courses[index] as Map<String, dynamic>;
+                  final bool done = course['done'] == true;
+                  return ListTile(
+                    leading: Icon(
+                      done ? Icons.check_circle : Icons.circle_outlined,
+                      color: done ? Colors.green : Colors.grey,
+                    ),
+                    title: Text(course['title'] as String),
+                    subtitle: Text(
+                      '${course['code']} • ${course['credits']} SKS • ${course['instructor']}',
+                    ),
+                    trailing: Text(
+                      done ? 'Selesai' : 'Belum',
+                      style: TextStyle(color: done ? Colors.green : Colors.grey),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── GreetingCard — StatefulWidget ───
 class GreetingCard extends StatefulWidget {
   final String nim;
   final String nama;
@@ -259,23 +318,4 @@ class _GreetingCardState extends State<GreetingCard> {
       ],
     );
   }
-}
-
-// ─── Reusable: buildStatCard ───
-Widget buildStatCard(String value, String label, IconData icon) {
-  return Expanded(
-    child: Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Icon(icon),
-            const SizedBox(height: 6),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(label),
-          ],
-        ),
-      ),
-    ),
-  );
 }
