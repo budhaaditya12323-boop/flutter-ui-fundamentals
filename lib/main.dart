@@ -7,6 +7,45 @@ void main() {
   runApp(const MyApp());
 }
 
+class GreetingCard extends StatefulWidget {
+  const GreetingCard({super.key});
+
+  @override
+  State<GreetingCard> createState() => _GreetingCardState();
+}
+
+class _GreetingCardState extends State<GreetingCard> {
+  final TextEditingController controller = TextEditingController();
+  String message = 'Belum Ada Pesan';
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  } //dispose biar gak memory leak
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text('$studentId - $studentName'),
+        TextField(controller: controller),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              message = controller.text.trim().isEmpty
+                  ? 'Input masih kosong'
+                  : controller.text.trim();
+            });
+          },
+          child: const Text('Tampilkan'),
+        ),
+        Text(message),
+      ],
+    );
+  }
+}
+
 Widget buildStatCard(String value, String label, IconData icon) {
   return Expanded(
     child: Card(
@@ -34,6 +73,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: const Text(
             'Flutter UI Fundamentals',
@@ -124,6 +164,15 @@ class MyApp extends StatelessWidget {
                   ),
                 ),
 
+                // ─── CARD 4: STATEFULL WIDGET ───
+                Card(
+                  child: Padding(padding: const EdgeInsets.all(16),
+                    child: SizedBox(
+                      width: 350,
+                      child: GreetingCard()
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
