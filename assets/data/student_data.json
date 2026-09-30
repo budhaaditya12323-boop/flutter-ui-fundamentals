@@ -1,0 +1,38 @@
+{
+  "student": {
+    "nim": "2415051006",
+    "name": "I Putu Budha Aditya"
+  },
+  "courses": [
+    {
+      "code": "MOB01",
+      "title": "Git & GitHub",
+      "subtitle": "Version control",
+      "done": true
+    },
+    {
+      "code": "MOB02",
+      "title": "Dart Fundamentals",
+      "subtitle": "Language basics",
+      "done": true
+    },
+    {
+      "code": "MOB03",
+      "title": "Flutter UI Fundamentals",
+      "subtitle": "Widgets & layout",
+      "done": false
+    },
+    {
+      "code": "MOB04",
+      "title": "Navigation",
+      "subtitle": "Routing & navigasi",
+      "done": false
+    },
+    {
+      "code": "MOB05",
+      "title": "State Management",
+      "subtitle": "Kelola state aplikasi",
+      "done": false
+    }
+  ]
+}
