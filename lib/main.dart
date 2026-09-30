@@ -74,9 +74,9 @@ Widget buildStatCard(String value, String label, IconData icon) {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-
   @override
   Widget build(BuildContext context) {
+    final int listDoneCounter = topics.where((item) => item['done'] == true).length;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -201,6 +201,7 @@ class MyApp extends StatelessWidget {
                                 );
                               },
                             ),
+                            Text('$listDoneCounter dari ${topics.length} topik selesai! '), // x dari y topik selesai
                           ],
                         ),
                       )
