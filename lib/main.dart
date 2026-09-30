@@ -10,6 +10,7 @@ void main() {
 Future<Map<String, dynamic>> loadStudentData() async {
   final jsonString = await rootBundle.loadString(
     'assets/data/student_data.json',
+    //'assets/data/student_dataa.json', -- simulasi kasus json salah direktori
   );
   return jsonDecode(jsonString) as Map<String, dynamic>;
 }
@@ -123,6 +124,24 @@ class _DashboardPageState extends State<DashboardPage> {
                           child: GreetingCard(nim: nim, nama: nama),
                         ),
                       ),
+                    ),
+                    Card(
+                      // child: Row(
+                      //   children: [
+                      //     const Icon(Icons.info),
+                      //     const SizedBox(width: 8),
+                      //     Text('$nama - $nim - Ini adalah teks yang sangat panjang untuk menguji layout'),
+                      //   ],
+                      // )                  SIMULASI OVERFLOW
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info),
+                          const SizedBox(width: 8),
+                          Expanded(                              // ← tambahkan
+                            child: Text('$nama - $nim - Ini adalah teks yang sangat panjang untuk menguji layout'),
+                          ),
+                        ],
+                      )
                     ),
                   ],
                 ),
