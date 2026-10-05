@@ -94,6 +94,18 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Test MediaQuerry
+                    
+
+                    // test Overflow
+                    // Container(
+                    //   child:
+                    //     Container(
+                    //       width: double.infinity,
+                    //       padding: const EdgeInsets.all(16),
+                    //       child: Text('$nama - $nim'),
+                    //     ),
+                    // ),
 
                     // ─── PROFIL ───
                     ProfileCard(
