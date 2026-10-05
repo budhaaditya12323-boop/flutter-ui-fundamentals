@@ -135,22 +135,22 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     
                     // Chip Dengan Row Biasa
-                    const SizedBox(height: 16),
-                    const Text('Row — Skill Chips',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 8,
-                      children: const [
-                        Chip(label: Text('Flutter')),
-                        Chip(label: Text('Dart')),
-                        Chip(label: Text('Git')),
-                        Chip(label: Text('Website')),
-                        Chip(label: Text('Mobile')),
-                        Chip(label: Text('Laravel')),
-                        Chip(label: Text('Tailwind')),
-                      ],
-                    ),
+                    // const SizedBox(height: 16),
+                    // const Text('Row — Skill Chips',
+                    //     style: TextStyle(fontWeight: FontWeight.bold)),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   spacing: 8,
+                    //   children: const [
+                    //     Chip(label: Text('Flutter')),
+                    //     Chip(label: Text('Dart')),
+                    //     Chip(label: Text('Git')),
+                    //     Chip(label: Text('Website')),
+                    //     Chip(label: Text('Mobile')),
+                    //     Chip(label: Text('Laravel')),
+                    //     Chip(label: Text('Tailwind')),
+                    //   ],
+                    // ),
 
                   // Layout Builder
                     LayoutBuilder(
@@ -198,7 +198,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 16),
 
                     // ─── LIST COURSES ───
-                    CourseList(courses: courses),
+                    CourseGrid(courses: courses),
                     const SizedBox(height: 16),
 
                     // ─── GREETING (StatefulWidget) ───
@@ -330,11 +330,88 @@ Widget buildStatCard(String value, String label, IconData icon) {
   );
 }
 
-// ─── REUSABLE 3: CourseList ───
-class CourseList extends StatelessWidget {
-  final List<dynamic> courses;
+// ─── TAHAP 5: CourseCard ───
+class CourseCard extends StatelessWidget {
+  final Map<String, dynamic> course;
+  const CourseCard({super.key, required this.course});
 
-  const CourseList({super.key, required this.courses});
+  @override
+  Widget build(BuildContext context) {
+    final bool done = course['done'] == true;
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // ─── Icon + Status ───
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(
+                  done ? Icons.check_circle : Icons.circle_outlined,
+                  color: done ? Colors.green : Colors.grey,
+                ),
+                Text(
+                  course['code'] as String,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+
+            // ─── Title ───
+            Text(
+              course['title'] as String,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+
+            // ─── Credits + Status ───
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${course['credits']} SKS',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                Text(
+                  done ? 'Selesai' : 'Belum',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: done ? Colors.green : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── TAHAP 5: CourseGrid Responsif ───
+class CourseGrid extends StatelessWidget {
+  final List<dynamic> courses;
+  const CourseGrid({super.key, required this.courses});
+
+  int _columnsFor(double width) {
+    if (width < 600) return 1;
+    if (width < 840) return 2;
+    return 3;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -343,40 +420,39 @@ class CourseList extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: SizedBox(
-          width: 350,
-          child: Column(
-            children: [
-              Text(
-                '$selesai dari ${courses.length} topik selesai',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: courses.length,
-                itemBuilder: (context, index) {
-                  final course = courses[index] as Map<String, dynamic>;
-                  final bool done = course['done'] == true;
-                  return ListTile(
-                    leading: Icon(
-                      done ? Icons.check_circle : Icons.circle_outlined,
-                      color: done ? Colors.green : Colors.grey,
-                    ),
-                    title: Text(course['title'] as String),
-                    subtitle: Text(
-                      '${course['code']} • ${course['credits']} SKS • ${course['instructor']}',
-                    ),
-                    trailing: Text(
-                      done ? 'Selesai' : 'Belum',
-                      style: TextStyle(color: done ? Colors.green : Colors.grey),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── HEADER: identitas + ringkasan ───
+            Text(
+              '$selesai dari ${courses.length} topik selesai',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+
+            // ─── GRID RESPONSIF ───
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final int columns = _columnsFor(constraints.maxWidth);
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 2.0,   // ← rasio card
+                  ),
+                  itemCount: courses.length,
+                  itemBuilder: (context, index) {
+                    final course = courses[index] as Map<String, dynamic>;
+                    return CourseCard(course: course);
+                  },
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
