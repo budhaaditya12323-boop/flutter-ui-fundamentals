@@ -47,6 +47,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final orientation = MediaQuery.of(context).orientation;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -106,6 +108,10 @@ class _DashboardPageState extends State<DashboardPage> {
                     //       child: Text('$nama - $nim'),
                     //     ),
                     // ),
+                    Text('Width: ${size.width.toStringAsFixed(0)}'),
+                    Text('Height: ${size.height.toStringAsFixed(0)}'),
+                    Text('Orientation: $orientation'),
+                    Text('$nama - $nim'),
 
                     // ─── PROFIL ───
                     ProfileCard(
