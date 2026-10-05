@@ -92,14 +92,23 @@ class _DashboardPageState extends State<DashboardPage> {
           return SingleChildScrollView(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(32),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Test MediaQuerry
-                    
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (constraints.maxWidth < 600) {
+                          return CompactLayout(nama: nama, nim: nim);
+                        } else if (constraints.maxWidth < 840) {
+                          return MediumLayout(nama: nama, nim: nim);
+                        } else {
+                          return ExpandedLayout(nama: nama, nim: nim);
+                        }
+                      },
+                    ),
 
-                    // test Overflow
+                    // Test Overflow
                     // Container(
                     //   child:
                     //     Container(
@@ -108,6 +117,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     //       child: Text('$nama - $nim'),
                     //     ),
                     // ),
+                    
+                    // Test Media Query
                     Text('Width: ${size.width.toStringAsFixed(0)}'),
                     Text('Height: ${size.height.toStringAsFixed(0)}'),
                     Text('Orientation: $orientation / ${size.width < 600 ? 'Compact' : 'Wide'}}'),
@@ -311,6 +322,92 @@ class CourseList extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─── Compact Layout (< 600) ───
+class CompactLayout extends StatelessWidget {
+  final String nama;
+  final String nim;
+  const CompactLayout({super.key, required this.nama, required this.nim});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.phone_android, size: 64),
+        const SizedBox(height: 12),
+        Text('$nama - $nim',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        const Chip(
+          label: Text('Compact Layout'),
+          backgroundColor: Color.fromARGB(60, 210, 210, 210),
+          labelStyle: TextStyle(),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Medium Layout (600–839) ───
+class MediumLayout extends StatelessWidget {
+  final String nama;
+  final String nim;
+  const MediumLayout({super.key, required this.nama, required this.nim});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.screen_rotation, size: 64),
+        const SizedBox(width: 16),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$nama - $nim',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Chip(
+              label: Text('Medium Layout'),
+              backgroundColor: Color.fromARGB(60, 210, 210, 210),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Expanded Layout (>= 840) ───
+class ExpandedLayout extends StatelessWidget {
+  final String nama;
+  final String nim;
+  const ExpandedLayout({super.key, required this.nama, required this.nim});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.desktop_windows, size: 64),
+        const SizedBox(width: 16),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$nama - $nim',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Chip(
+              label: Text('Expanded Layout'),
+              backgroundColor: Color.fromARGB(60, 210, 210, 210),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
