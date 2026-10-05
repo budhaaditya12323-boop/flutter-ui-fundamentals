@@ -96,6 +96,63 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+
+                    // ─── TAHAP 4: EXPANDED FLEX 2:1 ───
+                    const Text('Expanded Flex 2:1',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: buildBox('A', Colors.blue),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 1,
+                          child: buildBox('B', Colors.orange),
+                        ),
+                      ],
+                    ),
+
+                    // ─── TAHAP 4: WRAP CHIP ───
+                    const SizedBox(height: 16),
+                    const Text('Wrap — Skill Chips',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: const [
+                        Chip(label: Text('Flutter')),
+                        Chip(label: Text('Dart')),
+                        Chip(label: Text('Git')),
+                        Chip(label: Text('Website')),
+                        Chip(label: Text('Mobile')),
+                        Chip(label: Text('Laravel')),
+                        Chip(label: Text('Tailwind')),
+                      ],
+                    ),
+                    
+                    // Chip Dengan Row Biasa
+                    const SizedBox(height: 16),
+                    const Text('Row — Skill Chips',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 8,
+                      children: const [
+                        Chip(label: Text('Flutter')),
+                        Chip(label: Text('Dart')),
+                        Chip(label: Text('Git')),
+                        Chip(label: Text('Website')),
+                        Chip(label: Text('Mobile')),
+                        Chip(label: Text('Laravel')),
+                        Chip(label: Text('Tailwind')),
+                      ],
+                    ),
+
+                  // Layout Builder
                     LayoutBuilder(
                       builder: (context, constraints) {
                         if (constraints.maxWidth < 600) {
@@ -453,3 +510,26 @@ class _GreetingCardState extends State<GreetingCard> {
     );
   }
 }
+
+// ─── Reusable: buildBox ───
+Widget buildBox(String label, Color color) {
+  return Container(
+    height: 80,
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.3),
+      border: Border.all(color: color, width: 2),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Center(
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    ),
+  );
+}
+
