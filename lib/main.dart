@@ -48,6 +48,22 @@ class HomePage extends StatelessWidget {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
+
+            // ← Tombol ke DashboardPage
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DashboardPage(),
+                  ),
+                );
+              },
+              child: const Text('Buka Dashboard'),
+            ),
+            const SizedBox(height: 12),
+
+            // Tombol ke DetailPage
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -274,7 +290,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 16),
 
                     // ─── LIST COURSES ───
-                    CourseGrid(courses: courses),
+                    CourseGrid(
+                      courses: courses,
+                      nama: nama,        // ← kirim
+                      nim: nim,          // ← kirim
+                    ),
                     const SizedBox(height: 16),
 
                     // ─── GREETING (StatefulWidget) ───
@@ -409,7 +429,15 @@ Widget buildStatCard(String value, String label, IconData icon) {
 // ─── TAHAP 5: CourseCard ───
 class CourseCard extends StatelessWidget {
   final Map<String, dynamic> course;
-  const CourseCard({super.key, required this.course});
+  final String nama;
+  final String nim;
+
+  const CourseCard({
+    super.key,
+    required this.course,
+    required this.nama,
+    required this.nim,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -417,61 +445,70 @@ class CourseCard extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // ─── Icon + Status ───
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(
-                  done ? Icons.check_circle : Icons.circle_outlined,
-                  color: done ? Colors.green : Colors.grey,
-                ),
-                Text(
-                  course['code'] as String,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-
-            // ─── Title ───
-            Text(
-              course['title'] as String,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CourseDetailPage(
+                course: course,
+                nama: nama,
+                nim: nim,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
-
-            // ─── Credits + Status ───
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${course['credits']} SKS',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                Text(
-                  done ? 'Selesai' : 'Belum',
-                  style: TextStyle(
-                    fontSize: 12,
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(
+                    done ? Icons.check_circle : Icons.circle_outlined,
                     color: done ? Colors.green : Colors.grey,
-                    fontWeight: FontWeight.bold,
                   ),
+                  Text(
+                    course['code'] as String,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                course['title'] as String,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
-          ],
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${course['credits']} SKS',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  Text(
+                    done ? 'Selesai' : 'Belum',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: done ? Colors.green : Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -481,8 +518,17 @@ class CourseCard extends StatelessWidget {
 // ─── TAHAP 5: CourseGrid Responsif ───
 class CourseGrid extends StatelessWidget {
   final List<dynamic> courses;
-  const CourseGrid({super.key, required this.courses});
+  final String nama;
+  final String nim;
 
+  const CourseGrid({
+    super.key,
+    required this.courses,
+    required this.nama,
+    required this.nim,
+  });
+
+  // ← TAMBAHKAN method ini
   int _columnsFor(double width) {
     if (width < 600) return 1;
     if (width < 840) return 2;
@@ -491,39 +537,34 @@ class CourseGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int selesai = courses.where((c) => c['done'] == true).length;
+    final int selesai = courses.where((c) => c['done'] == true).length;   // ← HITUNG dulu
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ─── HEADER: identitas + ringkasan ───
-            Text(
-              '$selesai dari ${courses.length} topik selesai',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            Text('$selesai dari ${courses.length} topik selesai'),
             const SizedBox(height: 12),
-
-            // ─── GRID RESPONSIF ───
             LayoutBuilder(
               builder: (context, constraints) {
-                final int columns = _columnsFor(constraints.maxWidth);
-
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns,
+                    crossAxisCount: _columnsFor(constraints.maxWidth),
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 2.0,   // ← rasio card
+                    childAspectRatio: 1.6,
                   ),
                   itemCount: courses.length,
                   itemBuilder: (context, index) {
                     final course = courses[index] as Map<String, dynamic>;
-                    return CourseCard(course: course);
+                    return CourseCard(
+                      course: course,
+                      nama: nama,
+                      nim: nim,
+                    );
                   },
                 );
               },
@@ -683,5 +724,115 @@ Widget buildBox(String label, Color color) {
       ),
     ),
   );
+}
+
+class CourseDetailPage extends StatelessWidget {
+  final Map<String, dynamic> course;
+  final String nama;
+  final String nim;
+
+  const CourseDetailPage({
+    super.key,
+    required this.course,
+    required this.nama,
+    required this.nim,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool done = course['done'] == true;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(course['title'] as String),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── IDENTITAS MAHASISWA ───
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person, size: 32),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(nama,
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text(nim, style: const TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ─── DETAIL COURSE ───
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      course['title'] as String,
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text('Code: ${course['code']}',
+                        style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text('Credits: ${course['credits']} SKS',
+                        style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text('Instructor: ${course['instructor']}',
+                        style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 12),
+
+                    // ─── Status Conditional ───
+                    Row(
+                      children: [
+                        Icon(
+                          done ? Icons.check_circle : Icons.schedule,
+                          color: done ? Colors.green : Colors.orange,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          done ? 'Selesai' : 'Belum Selesai',
+                          style: TextStyle(
+                            color: done ? Colors.green : Colors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // ─── TOMBOL KEMBALI ───
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Kembali'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
