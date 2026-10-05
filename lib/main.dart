@@ -110,7 +110,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     // ),
                     Text('Width: ${size.width.toStringAsFixed(0)}'),
                     Text('Height: ${size.height.toStringAsFixed(0)}'),
-                    Text('Orientation: $orientation'),
+                    Text('Orientation: $orientation / ${size.width < 600 ? 'Compact' : 'Wide'}}'),
                     Text('$nama - $nim'),
 
                     // ─── PROFIL ───
