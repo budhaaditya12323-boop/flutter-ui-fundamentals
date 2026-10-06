@@ -528,7 +528,7 @@ Widget buildStatCard(String value, String label, IconData icon) {
 }
 
 // ─── TAHAP 5: CourseCard ───
-class CourseCard extends StatelessWidget {
+class CourseCard extends StatefulWidget {
   final Map<String, dynamic> course;
   final String nama;
   final String nim;
@@ -541,39 +541,66 @@ class CourseCard extends StatelessWidget {
   });
 
   @override
+  State<CourseCard> createState() => _CourseCardState();
+}
+
+class _CourseCardState extends State<CourseCard> {
+  bool _isFavorite = false;   // ← STATE FAVORITE
+
+  @override
   Widget build(BuildContext context) {
-    final bool done = course['done'] == true;
+    final bool done = widget.course['done'] == true;
 
     return Card(
       elevation: 2,
       child: InkWell(
+        // ─── TAP: buka detail ───
         onTap: () async {
           final messenger = ScaffoldMessenger.of(context);
           final result = await Navigator.push<bool>(
             context,
             MaterialPageRoute(
               builder: (_) => CourseDetailPage(
-                course: course,
-                nama: nama,
-                nim: nim,
+                course: widget.course,
+                nama: widget.nama,
+                nim: widget.nim,
+                isFavorite: _isFavorite,
               ),
             ),
           );
           if (result == true) {
-            messenger.showSnackBar(   // ← pakai messenger yang disimpan
+            messenger.showSnackBar(
               SnackBar(
-                content: Text('${course['title']} ditambahkan ke favorite!'),
+                content: Text('${widget.course['title']} ditambahkan ke favorite!'),
                 backgroundColor: Colors.green,
               ),
             );
           }
+          if (result != null) {                    // ← TERIMA hasil
+            setState(() {
+              _isFavorite = result;                // ← update state
+            });
+          }
+          
         },
+
+        // ─── LONG PRESS: info ───
+        onLongPress: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Info: ${widget.course['title']} — ${widget.course['credits']} SKS'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // ─── Icon + Code + FAVORITE ───
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -581,18 +608,40 @@ class CourseCard extends StatelessWidget {
                     done ? Icons.check_circle : Icons.circle_outlined,
                     color: done ? Colors.green : Colors.grey,
                   ),
-                  Text(
-                    course['code'] as String,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        widget.course['code'] as String,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // ─── TOMBOL FAVORITE ───
+                      IconButton(
+                        icon: Icon(
+                          _isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: _isFavorite ? Colors.pink : Colors.grey,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isFavorite = !_isFavorite;
+                          });
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
                   ),
                 ],
               ),
+
+              // ─── Title ───
               Text(
-                course['title'] as String,
+                widget.course['title'] as String,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -600,11 +649,13 @@ class CourseCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
+
+              // ─── Credits + Status ───
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${course['credits']} SKS',
+                    '${widget.course['credits']} SKS',
                     style: const TextStyle(fontSize: 12),
                   ),
                   Text(
@@ -625,20 +676,38 @@ class CourseCard extends StatelessWidget {
   }
 }
 
-class CourseDetailPage extends StatelessWidget {
+class CourseDetailPage extends StatefulWidget {
   final Map<String, dynamic> course;
   final String nama;
   final String nim;
+  final bool isFavorite;   // ← terima state awal
 
   const CourseDetailPage({
     super.key,
     required this.course,
     required this.nama,
     required this.nim,
+    required this.isFavorite,
   });
 
   @override
+  State<CourseDetailPage> createState() => _CourseDetailPageState();
+}
+
+class _CourseDetailPageState extends State<CourseDetailPage> {
+  late bool _isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = widget.isFavorite;   // ← init dari state awal
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final course = widget.course;
+    final nama = widget.nama;
+    final nim = widget.nim;
     final bool done = course['done'] == true;
 
     return Scaffold(
@@ -651,7 +720,7 @@ class CourseDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ─── IDENTITAS MAHASISWA ───
+            // ─── IDENTITAS ───
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -713,17 +782,23 @@ class CourseDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // ─── TOMBOL FAVORITE (POIN 35 & 36) ───
+            // ─── TOMBOL FAVORITE TOGGLE ───
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.pop(context, true);   // ← kirim true
+                  setState(() {
+                    _isFavorite = !_isFavorite;   // ← TOGGLE
+                  });
                 },
-                icon: const Icon(Icons.favorite),
-                label: const Text('Pilih / Favorite'),
+                icon: Icon(
+                  _isFavorite ? Icons.favorite : Icons.favorite_border,
+                ),
+                label: Text(
+                  _isFavorite ? 'Hapus dari Favorite' : 'Tambah ke Favorite',
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink,
+                  backgroundColor: _isFavorite ? Colors.pink : Colors.grey,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
@@ -731,12 +806,12 @@ class CourseDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // ─── TOMBOL KEMBALI (TANPA RESULT) ───
+            // ─── TOMBOL KEMBALI + KIRIM HASIL ───
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
-                  Navigator.pop(context);   // ← tanpa result
+                  Navigator.pop(context, _isFavorite);   // ← KIRIM state
                 },
                 child: const Text('Kembali'),
               ),
@@ -747,8 +822,6 @@ class CourseDetailPage extends StatelessWidget {
     );
   }
 }
-
-
 
 // ─── TAHAP 5: CourseGrid Responsif ───
 class CourseGrid extends StatelessWidget {
@@ -963,7 +1036,6 @@ Widget buildBox(String label, Color color) {
 
 
 //New Pages
-
 class ProfileTab extends StatelessWidget {
   final String nama;
   final String nim;
