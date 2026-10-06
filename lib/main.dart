@@ -1034,6 +1034,154 @@ Widget buildBox(String label, Color color) {
   );
 }
 
+// Feedback Form
+class FeedbackForm extends StatefulWidget {
+  final String nama;
+  final String nim;
+
+  const FeedbackForm({
+    super.key,
+    required this.nama,
+    required this.nim,
+  });
+
+  @override
+  State<FeedbackForm> createState() => _FeedbackFormState();
+}
+
+class _FeedbackFormState extends State<FeedbackForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  late TextEditingController _namaController;
+  late TextEditingController _nimController;
+  final TextEditingController _komentarController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // ← default dari identitas
+    _namaController = TextEditingController(text: widget.nama);
+    _nimController = TextEditingController(text: widget.nim);
+  }
+
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _nimController.dispose();
+    _komentarController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      // ← form valid, tampilkan hasil
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Feedback Terkirim'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Nama: ${_namaController.text}'),
+              Text('NIM: ${_nimController.text}'),
+              Text('Komentar: ${_komentarController.text}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── HEADER ───
+            const Text(
+              'Feedback Form',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+
+            // ─── NAMA ───
+            TextFormField(
+              controller: _namaController,
+              decoration: const InputDecoration(
+                labelText: 'Nama',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Nama wajib diisi';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // ─── NIM ───
+            TextFormField(
+              controller: _nimController,
+              decoration: const InputDecoration(
+                labelText: 'NIM',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'NIM wajib diisi';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // ─── KOMENTAR ───
+            TextFormField(
+              controller: _komentarController,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Komentar',
+                border: OutlineInputBorder(),
+                hintText: 'Tulis komentar minimal 5 karakter',
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Komentar wajib diisi';
+                }
+                if (value.trim().length < 5) {
+                  return 'Komentar minimal 5 karakter';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // ─── TOMBOL SUBMIT ───
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _submit,
+                child: const Text('Kirim Feedback'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 //New Pages
 class ProfileTab extends StatelessWidget {
@@ -1049,7 +1197,7 @@ class ProfileTab extends StatelessWidget {
         title: const Text('Profile'),
         centerTitle: true,
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -1065,6 +1213,7 @@ class ProfileTab extends StatelessWidget {
             Text(nim, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 24),
             const Icon(Icons.school, size: 48, color: Colors.blue),
+            FeedbackForm(nama: nama, nim: nim),
           ],
         ),
       ),
