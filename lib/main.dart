@@ -143,7 +143,7 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      HomeTab(nama: widget.nama, nim: widget.nim),
+      HomeTab(nama: widget.nama, nim: widget.nim, courses: widget.courses),
       CoursesTab(
         courses: widget.courses,
         nama: widget.nama,
@@ -556,6 +556,13 @@ class _CourseCardState extends State<CourseCard> {
       child: InkWell(
         // ─── TAP: buka detail ───
         onTap: () async {
+          // Masalah: tombol push ditekan cepat, route ter-push berkali-kali,
+          //          tombol back harus ditekan berkali-kali untuk kembali.
+          // Perbaikan: guard dengan ModalRoute.of(context)?.isCurrent,
+          //            jika route tidak aktif, abaikan tap,
+          //            supaya tidak terjadi push ganda.
+          if (ModalRoute.of(context)?.isCurrent != true) return;
+
           final messenger = ScaffoldMessenger.of(context);
           final result = await Navigator.push<bool>(
             context,
@@ -1245,6 +1252,11 @@ class ProfileTab extends StatelessWidget {
             const SizedBox(height: 24),
             const Icon(Icons.school, size: 48, color: Colors.blue),
             FeedbackForm(nama: nama, nim: nim),
+            // Kasus C: Keyboard
+            // Sebelum: Form tanpa SingleChildScrollView , saat keyboard muncul ,
+            //          form tertutup keyboard , user tidak bisa akses field.
+            // Sesudah: Form dibungkus SingleChildScrollView , saat keyboard muncul ,
+            //          form bisa discroll , user tetap bisa akses field
           ],
         ),
       ),
@@ -1293,8 +1305,9 @@ class CoursesTab extends StatelessWidget {
 class HomeTab extends StatelessWidget {
   final String nama;
   final String nim;
+  final List<dynamic> courses;
 
-  const HomeTab({super.key, required this.nama, required this.nim});
+  const HomeTab({super.key, required this.courses, required this.nama, required this.nim});
 
   @override
   Widget build(BuildContext context) {
@@ -1325,6 +1338,32 @@ class HomeTab extends StatelessWidget {
             const SizedBox(height: 8),
             Text('$nama - $nim',
                 style: const TextStyle(fontSize: 14)),
+
+            //Kasus A: RenderFlex Overflow
+            // Wrap(
+            //   children: [
+            //     const Icon(Icons.info),
+            //     const SizedBox(width: 8),
+            //     Text('$nim - $nama - teks sangat panjang banget banget banget banget banget banget banget banget banget banget banget bangetbanget banget banget banget banget bangetbanget banget banget banget banget banget'),
+            //   ],
+            // )
+
+            //Kasus B: Vertical viewport was given unbounded height
+            // Column(
+            //   children: [
+            //     ListView.builder(
+            //       shrinkWrap: true,
+            //       physics: const NeverScrollableScrollPhysics(),
+            //       itemCount: courses.length,
+            //       itemBuilder: (context, index) {
+            //         final course = courses[index] as Map<String, dynamic>;
+            //         return ListTile(
+            //           title: Text(course['title'] as String),
+            //         );
+            //       },
+            //     ),
+            //   ],
+            // )
           ],
         ),
       ),
