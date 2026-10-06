@@ -142,8 +142,7 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    // ← daftar halaman sesuai index
-    final List<Widget> _pages = [
+    final List<Widget> pages = [
       HomeTab(nama: widget.nama, nim: widget.nim),
       CoursesTab(
         courses: widget.courses,
@@ -153,33 +152,77 @@ class _MainShellState extends State<MainShell> {
       ProfileTab(nama: widget.nama, nim: widget.nim),
     ];
 
-    return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() => _currentIndex = index);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+    return LayoutBuilder(                          // ← TAHAP 11
+      builder: (context, constraints) {
+        // ─── COMPACT / MEDIUM (< 840) ───
+        if (constraints.maxWidth < 840) {
+          return Scaffold(
+            body: pages[_currentIndex],            // ← page yang sama
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: (index) {
+                setState(() => _currentIndex = index);
+              },
+              destinations: _destinations,
+            ),
+          );
+        }
+
+        // ─── EXPANDED (>= 840) ───
+        return Scaffold(
+          body: Row(
+            children: [
+              NavigationRail(
+                selectedIndex: _currentIndex,
+                onDestinationSelected: (index) {
+                  setState(() => _currentIndex = index);
+                },
+                labelType: NavigationRailLabelType.all,
+                destinations: const [
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: Text('Home'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.school_outlined),
+                    selectedIcon: Icon(Icons.school),
+                    label: Text('Courses'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.person_outline),
+                    selectedIcon: Icon(Icons.person),
+                    label: Text('Profile'),
+                  ),
+                ],
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(child: pages[_currentIndex]),   // ← page yang sama
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.school_outlined),
-            selectedIcon: Icon(Icons.school),
-            label: 'Courses',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
+
+  // ← destinations untuk NavigationBar
+  static const List<NavigationDestination> _destinations = [
+    NavigationDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.school_outlined),
+      selectedIcon: Icon(Icons.school),
+      label: 'Courses',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.person_outline),
+      selectedIcon: Icon(Icons.person),
+      label: 'Profile',
+    ),
+  ];
 }
 
 // ─── DashboardPage — StatefulWidget + FutureBuilder ───
