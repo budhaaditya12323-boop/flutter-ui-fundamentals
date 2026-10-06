@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// ─── TAHAP 7: HomePage ───
+// ─── TAHAP 7: HomePage Unused ───
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -82,7 +82,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-// ─── TAHAP 7: DetailPage ───
+// ─── TAHAP 7: DetailPageUnused ───
 class DetailPage extends StatelessWidget {
   const DetailPage({super.key});
 
@@ -120,6 +120,68 @@ class DetailPage extends StatelessWidget {
   }
 }
 
+// Change Navbar Val
+class MainShell extends StatefulWidget {
+  final String nama;
+  final String nim;
+  final List<dynamic> courses;
+
+  const MainShell({
+    super.key,
+    required this.nama,
+    required this.nim,
+    required this.courses,
+  });
+
+  @override
+  State<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<MainShell> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    // ← daftar halaman sesuai index
+    final List<Widget> _pages = [
+      HomeTab(nama: widget.nama, nim: widget.nim),
+      CoursesTab(
+        courses: widget.courses,
+        nama: widget.nama,
+        nim: widget.nim,
+      ),
+      ProfileTab(nama: widget.nama, nim: widget.nim),
+    ];
+
+    return Scaffold(
+      body: _pages[_currentIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() => _currentIndex = index);
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.school_outlined),
+            selectedIcon: Icon(Icons.school),
+            label: 'Courses',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ─── DashboardPage — StatefulWidget + FutureBuilder ───
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -143,13 +205,6 @@ class _DashboardPageState extends State<DashboardPage> {
     final orientation = MediaQuery.of(context).orientation;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: const Text(
-          'Learning Dashboard',                          // ← judul baru
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-        ),
-        centerTitle: true,
-      ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: studentFuture,
         builder: (context, snapshot) {
@@ -173,162 +228,165 @@ class _DashboardPageState extends State<DashboardPage> {
 
           final String nim = student['nim'] as String;
           final String nama = student['name'] as String;
-          final String program = student['program'] as String? ?? '-';
+          // final String program = student['program'] as String? ?? '-';
 
-          final int selesai = courses.where((c) => c['done'] == true).length;
-          final int totalSks = courses.fold<int>(
-            0,
-            (sum, c) => sum + (c['credits'] as int),
-          );
+          // final int selesai = courses.where((c) => c['done'] == true).length;
+          // final int totalSks = courses.fold<int>(
+          //   0,
+          //   (sum, c) => sum + (c['credits'] as int),
+          // );
 
-          return SingleChildScrollView(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+          return MainShell(
+            nama: nama,
+            nim: nim,
+            courses: courses,
+            // child: Center(
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(32),
+            //     child: Column(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
 
-                    // ─── TAHAP 4: EXPANDED FLEX 2:1 ───
-                    const Text('Expanded Flex 2:1',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: buildBox('A', Colors.blue),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          flex: 1,
-                          child: buildBox('B', Colors.orange),
-                        ),
-                      ],
-                    ),
+            //         // ─── TAHAP 4: EXPANDED FLEX 2:1 ───
+            //         const Text('Expanded Flex 2:1',
+            //             style: TextStyle(fontWeight: FontWeight.bold)),
+            //         const SizedBox(height: 8),
+            //         Row(
+            //           children: [
+            //             Expanded(
+            //               flex: 2,
+            //               child: buildBox('A', Colors.blue),
+            //             ),
+            //             const SizedBox(width: 8),
+            //             Expanded(
+            //               flex: 1,
+            //               child: buildBox('B', Colors.orange),
+            //             ),
+            //           ],
+            //         ),
 
-                    // ─── TAHAP 4: WRAP CHIP ───
-                    const SizedBox(height: 16),
-                    const Text('Wrap — Skill Chips',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: const [
-                        Chip(label: Text('Flutter')),
-                        Chip(label: Text('Dart')),
-                        Chip(label: Text('Git')),
-                        Chip(label: Text('Website')),
-                        Chip(label: Text('Mobile')),
-                        Chip(label: Text('Laravel')),
-                        Chip(label: Text('Tailwind')),
-                      ],
-                    ),
+            //         // ─── TAHAP 4: WRAP CHIP ───
+            //         const SizedBox(height: 16),
+            //         const Text('Wrap — Skill Chips',
+            //             style: TextStyle(fontWeight: FontWeight.bold)),
+            //         const SizedBox(height: 8),
+            //         Wrap(
+            //           spacing: 8,
+            //           runSpacing: 8,
+            //           children: const [
+            //             Chip(label: Text('Flutter')),
+            //             Chip(label: Text('Dart')),
+            //             Chip(label: Text('Git')),
+            //             Chip(label: Text('Website')),
+            //             Chip(label: Text('Mobile')),
+            //             Chip(label: Text('Laravel')),
+            //             Chip(label: Text('Tailwind')),
+            //           ],
+            //         ),
                     
-                    // Chip Dengan Row Biasa
-                    // const SizedBox(height: 16),
-                    // const Text('Row — Skill Chips',
-                    //     style: TextStyle(fontWeight: FontWeight.bold)),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   spacing: 8,
-                    //   children: const [
-                    //     Chip(label: Text('Flutter')),
-                    //     Chip(label: Text('Dart')),
-                    //     Chip(label: Text('Git')),
-                    //     Chip(label: Text('Website')),
-                    //     Chip(label: Text('Mobile')),
-                    //     Chip(label: Text('Laravel')),
-                    //     Chip(label: Text('Tailwind')),
-                    //   ],
-                    // ),
+            //         // Chip Dengan Row Biasa
+            //         // const SizedBox(height: 16),
+            //         // const Text('Row — Skill Chips',
+            //         //     style: TextStyle(fontWeight: FontWeight.bold)),
+            //         // Row(
+            //         //   mainAxisAlignment: MainAxisAlignment.center,
+            //         //   spacing: 8,
+            //         //   children: const [
+            //         //     Chip(label: Text('Flutter')),
+            //         //     Chip(label: Text('Dart')),
+            //         //     Chip(label: Text('Git')),
+            //         //     Chip(label: Text('Website')),
+            //         //     Chip(label: Text('Mobile')),
+            //         //     Chip(label: Text('Laravel')),
+            //         //     Chip(label: Text('Tailwind')),
+            //         //   ],
+            //         // ),
 
-                  // Layout Builder
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        if (constraints.maxWidth < 600) {
-                          return CompactLayout(nama: nama, nim: nim);
-                        } else if (constraints.maxWidth < 840) {
-                          return MediumLayout(nama: nama, nim: nim);
-                        } else {
-                          return ExpandedLayout(nama: nama, nim: nim);
-                        }
-                      },
-                    ),
+            //       // Layout Builder
+            //         LayoutBuilder(
+            //           builder: (context, constraints) {
+            //             if (constraints.maxWidth < 600) {
+            //               return CompactLayout(nama: nama, nim: nim);
+            //             } else if (constraints.maxWidth < 840) {
+            //               return MediumLayout(nama: nama, nim: nim);
+            //             } else {
+            //               return ExpandedLayout(nama: nama, nim: nim);
+            //             }
+            //           },
+            //         ),
 
-                    // Test Overflow
-                    // Container(
-                    //   child:
-                    //     Container(
-                    //       width: double.infinity,
-                    //       padding: const EdgeInsets.all(16),
-                    //       child: Text('$nama - $nim'),
-                    //     ),
-                    // ),
+            //         // Test Overflow
+            //         // Container(
+            //         //   child:
+            //         //     Container(
+            //         //       width: double.infinity,
+            //         //       padding: const EdgeInsets.all(16),
+            //         //       child: Text('$nama - $nim'),
+            //         //     ),
+            //         // ),
                     
-                    // Test Media Query
-                    Text('Width: ${size.width.toStringAsFixed(0)}'),
-                    Text('Height: ${size.height.toStringAsFixed(0)}'),
-                    Text('Orientation: $orientation / ${size.width < 600 ? 'Compact' : 'Wide'}}'),
-                    Text('$nama - $nim'),
+            //         // Test Media Query
+            //         Text('Width: ${size.width.toStringAsFixed(0)}'),
+            //         Text('Height: ${size.height.toStringAsFixed(0)}'),
+            //         Text('Orientation: $orientation / ${size.width < 600 ? 'Compact' : 'Wide'}}'),
+            //         Text('$nama - $nim'),
 
-                    // ─── PROFIL ───
-                    ProfileCard(
-                      nama: nama,
-                      nim: nim,
-                      program: program,
-                    ),
-                    const SizedBox(height: 16),
+            //         // ─── PROFIL ───
+            //         ProfileCard(
+            //           nama: nama,
+            //           nim: nim,
+            //           program: program,
+            //         ),
+            //         const SizedBox(height: 16),
 
-                    // ─── SUMMARY (2 card: topik & SKS) ───
-                    SummaryRow(
-                      totalTopik: courses.length,
-                      totalSks: totalSks,
-                      selesai: selesai,
-                    ),
-                    const SizedBox(height: 16),
+            //         // ─── SUMMARY (2 card: topik & SKS) ───
+            //         SummaryRow(
+            //           totalTopik: courses.length,
+            //           totalSks: totalSks,
+            //           selesai: selesai,
+            //         ),
+            //         const SizedBox(height: 16),
 
-                    // ─── LIST COURSES ───
-                    CourseGrid(
-                      courses: courses,
-                      nama: nama,        // ← kirim
-                      nim: nim,          // ← kirim
-                    ),
-                    const SizedBox(height: 16),
+            //         // ─── LIST COURSES ───
+            //         CourseGrid(
+            //           courses: courses,
+            //           nama: nama,        // ← kirim
+            //           nim: nim,          // ← kirim
+            //         ),
+            //         const SizedBox(height: 16),
 
-                    // ─── GREETING (StatefulWidget) ───
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: SizedBox(
-                          width: 350,
-                          child: GreetingCard(nim: nim, nama: nama),
-                        ),
-                      ),
-                    ),
-                    Card(
-                      // child: Row(
-                      //   children: [
-                      //     const Icon(Icons.info),
-                      //     const SizedBox(width: 8),
-                      //     Text('$nama - $nim - Ini adalah teks yang sangat panjang untuk menguji layout'),
-                      //   ],
-                      // )                  SIMULASI OVERFLOW
-                      child: Row(
-                        children: [
-                          const Icon(Icons.info),
-                          const SizedBox(width: 8),
-                          Expanded(                              // ← tambahkan
-                            child: Text('$nama - $nim - Ini adalah teks yang sangat panjang untuk menguji layout'),
-                          ),
-                        ],
-                      )
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            //         // ─── GREETING (StatefulWidget) ───
+            //         Card(
+            //           child: Padding(
+            //             padding: const EdgeInsets.all(16),
+            //             child: SizedBox(
+            //               width: 350,
+            //               child: GreetingCard(nim: nim, nama: nama),
+            //             ),
+            //           ),
+            //         ),
+            //         Card(
+            //           // child: Row(
+            //           //   children: [
+            //           //     const Icon(Icons.info),
+            //           //     const SizedBox(width: 8),
+            //           //     Text('$nama - $nim - Ini adalah teks yang sangat panjang untuk menguji layout'),
+            //           //   ],
+            //           // )                  SIMULASI OVERFLOW
+            //           child: Row(
+            //             children: [
+            //               const Icon(Icons.info),
+            //               const SizedBox(width: 8),
+            //               Expanded(                              // ← tambahkan
+            //                 child: Text('$nama - $nim - Ini adalah teks yang sangat panjang untuk menguji layout'),
+            //               ),
+            //             ],
+            //           )
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
           );
         },
       ),
@@ -860,3 +918,121 @@ Widget buildBox(String label, Color color) {
   );
 }
 
+
+//New Pages
+
+class ProfileTab extends StatelessWidget {
+  final String nama;
+  final String nim;
+
+  const ProfileTab({super.key, required this.nama, required this.nim});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircleAvatar(
+              radius: 60,
+              backgroundImage: AssetImage('assets/images/profile.jpeg'),
+            ),
+            const SizedBox(height: 16),
+            Text(nama,
+                style: const TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(nim, style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 24),
+            const Icon(Icons.school, size: 48, color: Colors.blue),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CoursesTab extends StatelessWidget {
+  final List<dynamic> courses;
+  final String nama;
+  final String nim;
+
+  const CoursesTab({
+    super.key,
+    required this.courses,
+    required this.nama,
+    required this.nim,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Courses'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Text('$nama - $nim',
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            CourseGrid(
+              courses: courses,
+              nama: nama,
+              nim: nim,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class HomeTab extends StatelessWidget {
+  final String nama;
+  final String nim;
+
+  const HomeTab({super.key, required this.nama, required this.nim});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < 600) {
+                  return CompactLayout(nama: nama, nim: nim);
+                } else if (constraints.maxWidth < 840) {
+                  return MediumLayout(nama: nama, nim: nim);
+                } else {
+                  return ExpandedLayout(nama: nama, nim: nim);
+                }
+              },
+            ),
+            const Icon(Icons.home, size: 64, color: Colors.blue),
+            const SizedBox(height: 16),
+            const Text('Selamat Datang!',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('$nama - $nim',
+                style: const TextStyle(fontSize: 14)),
+          ],
+        ),
+      ),
+    );
+  }
+}
