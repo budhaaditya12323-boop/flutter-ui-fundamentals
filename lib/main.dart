@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      home: const DashboardPage(),
     );
   }
 }
@@ -446,8 +446,9 @@ class CourseCard extends StatelessWidget {
     return Card(
       elevation: 2,
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final messenger = ScaffoldMessenger.of(context);
+          final result = await Navigator.push<bool>(
             context,
             MaterialPageRoute(
               builder: (_) => CourseDetailPage(
@@ -457,6 +458,14 @@ class CourseCard extends StatelessWidget {
               ),
             ),
           );
+          if (result == true) {
+            messenger.showSnackBar(   // ← pakai messenger yang disimpan
+              SnackBar(
+                content: Text('${course['title']} ditambahkan ke favorite!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -514,6 +523,131 @@ class CourseCard extends StatelessWidget {
     );
   }
 }
+
+class CourseDetailPage extends StatelessWidget {
+  final Map<String, dynamic> course;
+  final String nama;
+  final String nim;
+
+  const CourseDetailPage({
+    super.key,
+    required this.course,
+    required this.nama,
+    required this.nim,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool done = course['done'] == true;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(course['title'] as String),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── IDENTITAS MAHASISWA ───
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person, size: 32),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(nama,
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text(nim, style: const TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ─── DETAIL COURSE ───
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      course['title'] as String,
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text('Code: ${course['code']}'),
+                    Text('Credits: ${course['credits']} SKS'),
+                    Text('Instructor: ${course['instructor']}'),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          done ? Icons.check_circle : Icons.schedule,
+                          color: done ? Colors.green : Colors.orange,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          done ? 'Selesai' : 'Belum Selesai',
+                          style: TextStyle(
+                            color: done ? Colors.green : Colors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // ─── TOMBOL FAVORITE (POIN 35 & 36) ───
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context, true);   // ← kirim true
+                },
+                icon: const Icon(Icons.favorite),
+                label: const Text('Pilih / Favorite'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.pink,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // ─── TOMBOL KEMBALI (TANPA RESULT) ───
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context);   // ← tanpa result
+                },
+                child: const Text('Kembali'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
 
 // ─── TAHAP 5: CourseGrid Responsif ───
 class CourseGrid extends StatelessWidget {
@@ -724,115 +858,5 @@ Widget buildBox(String label, Color color) {
       ),
     ),
   );
-}
-
-class CourseDetailPage extends StatelessWidget {
-  final Map<String, dynamic> course;
-  final String nama;
-  final String nim;
-
-  const CourseDetailPage({
-    super.key,
-    required this.course,
-    required this.nama,
-    required this.nim,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bool done = course['done'] == true;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(course['title'] as String),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ─── IDENTITAS MAHASISWA ───
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Icon(Icons.person, size: 32),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(nama,
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold)),
-                        Text(nim, style: const TextStyle(fontSize: 14)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // ─── DETAIL COURSE ───
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      course['title'] as String,
-                      style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text('Code: ${course['code']}',
-                        style: const TextStyle(fontSize: 14)),
-                    const SizedBox(height: 4),
-                    Text('Credits: ${course['credits']} SKS',
-                        style: const TextStyle(fontSize: 14)),
-                    const SizedBox(height: 4),
-                    Text('Instructor: ${course['instructor']}',
-                        style: const TextStyle(fontSize: 14)),
-                    const SizedBox(height: 12),
-
-                    // ─── Status Conditional ───
-                    Row(
-                      children: [
-                        Icon(
-                          done ? Icons.check_circle : Icons.schedule,
-                          color: done ? Colors.green : Colors.orange,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          done ? 'Selesai' : 'Belum Selesai',
-                          style: TextStyle(
-                            color: done ? Colors.green : Colors.orange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // ─── TOMBOL KEMBALI ───
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Kembali'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
