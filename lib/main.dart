@@ -1225,7 +1225,7 @@ class ProfileTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Course Explorer - Profile'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -1268,7 +1268,7 @@ class CoursesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Courses'),
+        title: const Text('Course Explorer - Courses'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -1300,10 +1300,10 @@ class HomeTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: const Text('Course Explorer - Home'),
         centerTitle: true,
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
