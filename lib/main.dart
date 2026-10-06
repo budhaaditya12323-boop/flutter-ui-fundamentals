@@ -1056,10 +1056,11 @@ class _FeedbackFormState extends State<FeedbackForm> {
   late TextEditingController _nimController;
   final TextEditingController _komentarController = TextEditingController();
 
+  bool _isLoading = false;   // ← TAHAP 14, loading state
+
   @override
   void initState() {
     super.initState();
-    // ← default dari identitas
     _namaController = TextEditingController(text: widget.nama);
     _nimController = TextEditingController(text: widget.nim);
   }
@@ -1072,31 +1073,52 @@ class _FeedbackFormState extends State<FeedbackForm> {
     super.dispose();
   }
 
+  // ─── SUBMIT, dengan Dialog + Loading + SnackBar ───
   void _submit() {
-    if (_formKey.currentState!.validate()) {
-      // ← form valid, tampilkan hasil
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Feedback Terkirim'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Nama: ${_namaController.text}'),
-              Text('NIM: ${_nimController.text}'),
-              Text('Komentar: ${_komentarController.text}'),
-            ],
+    if (!_formKey.currentState!.validate()) return;
+
+    // ─── TAHAP 14, AlertDialog Konfirmasi ───
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Konfirmasi'),
+        content: const Text('Kirim feedback ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Batal'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);   // ← tutup dialog
+              _prosesSubmit();                // ← proses
+            },
+            child: const Text('Kirim'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── PROSES, dengan Loading + SnackBar ───
+  Future<void> _prosesSubmit() async {
+    setState(() => _isLoading = true);   // ← tampilkan loading
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    // ─── Simulasi loading 2 detik ───
+    await Future.delayed(const Duration(seconds: 2));
+
+    setState(() => _isLoading = false);  // ← sembunyikan loading
+
+    // ─── TAHAP 14, SnackBar ───
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Feedback berhasil dikirim!'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 3),
+      ),
+    );
   }
 
   @override
@@ -1168,12 +1190,21 @@ class _FeedbackFormState extends State<FeedbackForm> {
             ),
             const SizedBox(height: 24),
 
-            // ─── TOMBOL SUBMIT ───
+            // ─── TOMBOL SUBMIT, dengan Loading ───
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Kirim Feedback'),
+                onPressed: _isLoading ? null : _submit,   // ← disable saat loading
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Kirim Feedback'),
               ),
             ),
           ],
