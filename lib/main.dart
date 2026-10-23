@@ -4,6 +4,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'screen/layouts/compact_layout.dart';
 import 'screen/layouts/expanded_layout.dart';
 import 'screen/layouts/medium_layout.dart';
+import 'course_state.dart'; // ← import CourseState
 
 void main() {
   runApp(const MyApp());
@@ -380,22 +381,22 @@ class CourseCard extends StatelessWidget {
   final Map<String, dynamic> course;
   final String nama;
   final String nim;
-  final bool isFavorite;
-  final void Function(String, bool) onToggleFavorite;
+  final CourseState courseState; // ← GANTI isFavorite & onToggleFavorite
 
   const CourseCard({
     super.key,
     required this.course,
     required this.nama,
     required this.nim,
-    required this.isFavorite,
-    required this.onToggleFavorite,
+    required this.courseState,
   });
 
   @override
   Widget build(BuildContext context) {
     final bool done = course['done'] == true;
     final String code = course['code'] as String;
+    // Cek status langsung dari CourseState
+    final bool isFav = courseState.isFavorite(code);
 
     return Card(
       elevation: 2,
@@ -411,23 +412,22 @@ class CourseCard extends StatelessWidget {
                 course: course,
                 nama: nama,
                 nim: nim,
-                isFavorite: isFavorite,
+                isFavorite: isFav,
               ),
             ),
           );
-          if (result == true) {
+          
+          if (result != null) {
+            // Panggil method dari state langsung
+            courseState.toggleFavorite(code); 
             messenger.showSnackBar(
               SnackBar(
-                content: Text('$code ditambahkan ke favorite!'),
-                backgroundColor: Colors.green,
+                content: Text('$code ${result ? 'ditambahkan ke' : 'dihapus dari'} favorite!'),
+                backgroundColor: result ? Colors.green : Colors.grey,
               ),
             );
           }
-          if (result != null) {
-            onToggleFavorite(code, result);
-          }
         },
-
         onLongPress: () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -436,7 +436,6 @@ class CourseCard extends StatelessWidget {
             ),
           );
         },
-
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -461,16 +460,15 @@ class CourseCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      // ─── TOMBOL FAVORITE ───
                       IconButton(
                         icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.pink : Colors.grey,
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav ? Colors.pink : Colors.grey,
                           size: 20,
                         ),
                         onPressed: () {
-                          // ─── PANGGIL CALLBACK ───
-                          onToggleFavorite(code, !isFavorite);
+                          // Panggil method dari state langsung
+                          courseState.toggleFavorite(code);
                         },
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -665,17 +663,14 @@ class CourseGrid extends StatelessWidget {
   final List<dynamic> courses;
   final String nama;
   final String nim;
-  // ─── TAMBAH PARAMETER ───
-  final Set<String> favorites;
-  final void Function(String, bool) onToggleFavorite;
+  final CourseState courseState; // ← GANTI favorites & onToggleFavorite
 
   const CourseGrid({
     super.key,
     required this.courses,
     required this.nama,
     required this.nim,
-    required this.favorites,
-    required this.onToggleFavorite,
+    required this.courseState, // ← Wajib
   });
 
   int _columnsFor(double width) {
@@ -698,7 +693,6 @@ class CourseGrid extends StatelessWidget {
             LayoutBuilder(
               builder: (context, constraints) {
                 return GridView.builder(
-                  key: ValueKey(favorites.length),
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -710,14 +704,11 @@ class CourseGrid extends StatelessWidget {
                   itemCount: courses.length,
                   itemBuilder: (context, index) {
                     final course = courses[index] as Map<String, dynamic>;
-                    final String code = course['code'] as String;
-                    
                     return CourseCard(
                       course: course,
                       nama: nama,
                       nim: nim,
-                      isFavorite: favorites.contains(code),
-                      onToggleFavorite: onToggleFavorite,
+                      courseState: courseState, // ← Kirim object
                     );
                   },
                 );
@@ -729,14 +720,6 @@ class CourseGrid extends StatelessWidget {
     );
   }
 }
-
-// ─── Compact Layout (< 600) ───
-
-
-// ─── Medium Layout (600–839) ───
-
-
-// ─── Expanded Layout (>= 840) ───
 
 // sudah dilakukan pada tahap 2
 
@@ -1045,23 +1028,12 @@ class CoursesTab extends StatefulWidget {
 }
 
 class _CoursesTabState extends State<CoursesTab> {
-  final Set<String> _favorites = {};
-  final ValueNotifier<int> _favoriteCount = ValueNotifier<int>(0);
-
-  void _toggleFavorite(String code, bool isFav) {
-    setState(() {
-      if (isFav) {
-        _favorites.add(code);
-      } else {
-        _favorites.remove(code);
-      }
-      _favoriteCount.value = _favorites.length;
-    });
-  }
+  // ─── GANTI _favorites DAN _toggleFavorite DENGAN INI ───
+  final CourseState _courseState = CourseState();
 
   @override
   void dispose() {
-    _favoriteCount.dispose();
+    _courseState.dispose();
     super.dispose();
   }
 
@@ -1078,22 +1050,12 @@ class _CoursesTabState extends State<CoursesTab> {
           children: [
             Text('${widget.nama} - ${widget.nim}',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            
-            ValueListenableBuilder<int>(
-              valueListenable: _favoriteCount,
-              builder: (context, value, child) {
-                return Text('Total Favorite: $value',
-                    style: const TextStyle(fontSize: 16, color: Colors.pink));
-              },
-            ),
-
             const SizedBox(height: 16),
             CourseGrid(
               courses: widget.courses,
               nama: widget.nama,
               nim: widget.nim,
-              favorites: _favorites,
-              onToggleFavorite: _toggleFavorite,
+              courseState: _courseState, // ← Kirim object CourseState
             ),
           ],
         ),
