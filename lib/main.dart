@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:provider/provider.dart'; // ← TAMBAHKAN INI
 import 'screen/layouts/compact_layout.dart';
 import 'screen/layouts/expanded_layout.dart';
 import 'screen/layouts/medium_layout.dart';
 import 'course_state.dart'; // ← import CourseState
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => CourseState(), // ← PROVIDER CourseState
+      child: const MyApp(),
+    ),
+  );
 }
 
 // ─── Baca JSON ───
