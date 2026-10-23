@@ -166,7 +166,7 @@ class _MainShellState extends State<MainShell> {
               onDestinationSelected: (index) {
                 setState(() => _currentIndex = index);
               },
-              destinations: _destinations,
+              destinations: _destinations, 
             ),
           );
         }
@@ -1084,55 +1084,35 @@ class HomeTab extends StatelessWidget {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth < 600) {
-                  return CompactLayout(nama: nama, nim: nim);
-                } else if (constraints.maxWidth < 840) {
-                  return MediumLayout(nama: nama, nim: nim);
-                } else {
-                  return ExpandedLayout(nama: nama, nim: nim);
-                }
-              },
-            ),
-            const Icon(Icons.home, size: 64, color: Colors.blue),
-            const SizedBox(height: 16),
-            const Text('Selamat Datang!',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('$nama - $nim',
-                style: const TextStyle(fontSize: 14)),
-
-            //Kasus A: RenderFlex Overflow
-            // Wrap(
-            //   children: [
-            //     const Icon(Icons.info),
-            //     const SizedBox(width: 8),
-            //     Text('$nim - $nama - teks sangat panjang banget banget banget banget banget banget banget banget banget banget banget bangetbanget banget banget banget banget bangetbanget banget banget banget banget banget'),
-            //   ],
-            // )
-
-            //Kasus B: Vertical viewport was given unbounded height
-            // Column(
-            //   children: [
-            //     ListView.builder(
-            //       shrinkWrap: true,
-            //       physics: const NeverScrollableScrollPhysics(),
-            //       itemCount: courses.length,
-            //       itemBuilder: (context, index) {
-            //         final course = courses[index] as Map<String, dynamic>;
-            //         return ListTile(
-            //           title: Text(course['title'] as String),
-            //         );
-            //       },
-            //     ),
-            //   ],
-            // )
-          ],
-        ),
+        // physics: const AlwaysScrollableScrollPhysics(), 
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height - kToolbarHeight - MediaQuery.of(context).padding.top,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 600) {
+                    return CompactLayout(nama: nama, nim: nim);
+                  } else if (constraints.maxWidth < 840) {
+                    return MediumLayout(nama: nama, nim: nim);
+                  } else {
+                    return ExpandedLayout(nama: nama, nim: nim);
+                  }
+                },
+              ),
+              const Icon(Icons.home, size: 64, color: Colors.blue),
+              const SizedBox(height: 16),
+              const Text('Selamat Datang!',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text('$nama - $nim',
+                  style: const TextStyle(fontSize: 14)),
+            ],
+          ),
+        )
       ),
     );
   }

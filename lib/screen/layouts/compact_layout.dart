@@ -8,19 +8,25 @@ class CompactLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.phone_android, size: 64),
-        const SizedBox(height: 12),
-        Text('$nama - $nim',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        const Chip(
-          label: Text('Compact Layout'),
-          backgroundColor: Color.fromARGB(60, 210, 210, 210),
-          labelStyle: TextStyle(),
-        ),
+        Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.phone_android, size: 64),
+            const SizedBox(height: 12),
+            Text('$nama - $nim',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Chip(
+              label: Text('Compact Layout'),
+              backgroundColor: Color.fromARGB(60, 210, 210, 210),
+              labelStyle: TextStyle(),
+            ),
+          ],
+        )
       ],
     );
   }
