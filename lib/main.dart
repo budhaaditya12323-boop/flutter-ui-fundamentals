@@ -376,34 +376,30 @@ Widget buildStatCard(String value, String label, IconData icon) {
   );
 }
 
-// ─── TAHAP 5: CourseCard ───
-class CourseCard extends StatefulWidget {
+class CourseCard extends StatelessWidget {
   final Map<String, dynamic> course;
   final String nama;
   final String nim;
+  final bool isFavorite;
+  final void Function(String, bool) onToggleFavorite;
 
   const CourseCard({
     super.key,
     required this.course,
     required this.nama,
     required this.nim,
+    required this.isFavorite,
+    required this.onToggleFavorite,
   });
 
   @override
-  State<CourseCard> createState() => _CourseCardState();
-}
-
-class _CourseCardState extends State<CourseCard> {
-  bool _isFavorite = false;   // ← STATE FAVORITE
-
-  @override
   Widget build(BuildContext context) {
-    final bool done = widget.course['done'] == true;
+    final bool done = course['done'] == true;
+    final String code = course['code'] as String;
 
     return Card(
       elevation: 2,
       child: InkWell(
-        // ─── TAP: buka detail ───
         onTap: () async {
           if (ModalRoute.of(context)?.isCurrent != true) return;
 
@@ -412,34 +408,30 @@ class _CourseCardState extends State<CourseCard> {
             context,
             MaterialPageRoute(
               builder: (_) => CourseDetailPage(
-                course: widget.course,
-                nama: widget.nama,
-                nim: widget.nim,
-                isFavorite: _isFavorite,
+                course: course,
+                nama: nama,
+                nim: nim,
+                isFavorite: isFavorite,
               ),
             ),
           );
           if (result == true) {
             messenger.showSnackBar(
               SnackBar(
-                content: Text('${widget.course['title']} ditambahkan ke favorite!'),
+                content: Text('$code ditambahkan ke favorite!'),
                 backgroundColor: Colors.green,
               ),
             );
           }
-          if (result != null) {                    // ← TERIMA hasil
-            setState(() {
-              _isFavorite = result;                // ← update state
-            });
+          if (result != null) {
+            onToggleFavorite(code, result);
           }
-          
         },
 
-        // ─── LONG PRESS: info ───
         onLongPress: () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Info: ${widget.course['title']} — ${widget.course['credits']} SKS'),
+              content: Text('Info: ${course['title']} — ${course['credits']} SKS'),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -451,7 +443,6 @@ class _CourseCardState extends State<CourseCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // ─── Icon + Code + FAVORITE ───
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -462,7 +453,7 @@ class _CourseCardState extends State<CourseCard> {
                   Row(
                     children: [
                       Text(
-                        widget.course['code'] as String,
+                        code,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -473,14 +464,13 @@ class _CourseCardState extends State<CourseCard> {
                       // ─── TOMBOL FAVORITE ───
                       IconButton(
                         icon: Icon(
-                          _isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: _isFavorite ? Colors.pink : Colors.grey,
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.pink : Colors.grey,
                           size: 20,
                         ),
                         onPressed: () {
-                          setState(() {
-                            _isFavorite = !_isFavorite;
-                          });
+                          // ─── PANGGIL CALLBACK ───
+                          onToggleFavorite(code, !isFavorite);
                         },
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -489,10 +479,8 @@ class _CourseCardState extends State<CourseCard> {
                   ),
                 ],
               ),
-
-              // ─── Title ───
               Text(
-                widget.course['title'] as String,
+                course['title'] as String,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -500,13 +488,11 @@ class _CourseCardState extends State<CourseCard> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-
-              // ─── Credits + Status ───
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${widget.course['credits']} SKS',
+                    '${course['credits']} SKS',
                     style: const TextStyle(fontSize: 12),
                   ),
                   Text(
@@ -679,15 +665,19 @@ class CourseGrid extends StatelessWidget {
   final List<dynamic> courses;
   final String nama;
   final String nim;
+  // ─── TAMBAH PARAMETER ───
+  final Set<String> favorites;
+  final void Function(String, bool) onToggleFavorite;
 
   const CourseGrid({
     super.key,
     required this.courses,
     required this.nama,
     required this.nim,
+    required this.favorites,
+    required this.onToggleFavorite,
   });
 
-  // ← TAMBAHKAN method ini
   int _columnsFor(double width) {
     if (width < 600) return 1;
     if (width < 840) return 2;
@@ -696,7 +686,7 @@ class CourseGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int selesai = courses.where((c) => c['done'] == true).length;   // ← HITUNG dulu
+    final int selesai = courses.where((c) => c['done'] == true).length;
 
     return Card(
       child: Padding(
@@ -708,6 +698,7 @@ class CourseGrid extends StatelessWidget {
             LayoutBuilder(
               builder: (context, constraints) {
                 return GridView.builder(
+                  key: ValueKey(favorites.length),
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -719,10 +710,14 @@ class CourseGrid extends StatelessWidget {
                   itemCount: courses.length,
                   itemBuilder: (context, index) {
                     final course = courses[index] as Map<String, dynamic>;
+                    final String code = course['code'] as String;
+                    
                     return CourseCard(
                       course: course,
                       nama: nama,
                       nim: nim,
+                      isFavorite: favorites.contains(code),
+                      onToggleFavorite: onToggleFavorite,
                     );
                   },
                 );
@@ -1031,7 +1026,8 @@ class ProfileTab extends StatelessWidget {
   }
 }
 
-class CoursesTab extends StatelessWidget {
+
+class CoursesTab extends StatefulWidget {
   final List<dynamic> courses;
   final String nama;
   final String nim;
@@ -1044,6 +1040,23 @@ class CoursesTab extends StatelessWidget {
   });
 
   @override
+  State<CoursesTab> createState() => _CoursesTabState();
+}
+
+class _CoursesTabState extends State<CoursesTab> {
+  final Set<String> _favorites = {};
+
+  void _toggleFavorite(String code, bool isFav) {
+    setState(() {
+      if (isFav) {
+        _favorites.add(code);
+      } else {
+        _favorites.remove(code);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -1054,13 +1067,15 @@ class CoursesTab extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text('$nama - $nim',
+            Text('${widget.nama} - ${widget.nim}',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             CourseGrid(
-              courses: courses,
-              nama: nama,
-              nim: nim,
+              courses: widget.courses,
+              nama: widget.nama,
+              nim: widget.nim,
+              favorites: _favorites,
+              onToggleFavorite: _toggleFavorite,
             ),
           ],
         ),
@@ -1068,6 +1083,7 @@ class CoursesTab extends StatelessWidget {
     );
   }
 }
+
 
 class HomeTab extends StatelessWidget {
   final String nama;
