@@ -738,6 +738,7 @@ class CourseGrid extends StatelessWidget {
 
 // ─── Expanded Layout (>= 840) ───
 
+// sudah dilakukan pada tahap 2
 
 // ─── GreetingCard — StatefulWidget ───
 class GreetingCard extends StatefulWidget {
