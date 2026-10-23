@@ -1046,6 +1046,7 @@ class CoursesTab extends StatefulWidget {
 
 class _CoursesTabState extends State<CoursesTab> {
   final Set<String> _favorites = {};
+  final ValueNotifier<int> _favoriteCount = ValueNotifier<int>(0);
 
   void _toggleFavorite(String code, bool isFav) {
     setState(() {
@@ -1054,7 +1055,14 @@ class _CoursesTabState extends State<CoursesTab> {
       } else {
         _favorites.remove(code);
       }
+      _favoriteCount.value = _favorites.length;
     });
+  }
+
+  @override
+  void dispose() {
+    _favoriteCount.dispose();
+    super.dispose();
   }
 
   @override
@@ -1070,6 +1078,15 @@ class _CoursesTabState extends State<CoursesTab> {
           children: [
             Text('${widget.nama} - ${widget.nim}',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
+            
+            ValueListenableBuilder<int>(
+              valueListenable: _favoriteCount,
+              builder: (context, value, child) {
+                return Text('Total Favorite: $value',
+                    style: const TextStyle(fontSize: 16, color: Colors.pink));
+              },
+            ),
+
             const SizedBox(height: 16),
             CourseGrid(
               courses: widget.courses,
