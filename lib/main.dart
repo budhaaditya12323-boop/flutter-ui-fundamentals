@@ -387,14 +387,12 @@ class CourseCard extends StatelessWidget {
   final Map<String, dynamic> course;
   final String nama;
   final String nim;
-  final CourseState courseState; // ← GANTI isFavorite & onToggleFavorite
 
   const CourseCard({
     super.key,
     required this.course,
     required this.nama,
     required this.nim,
-    required this.courseState,
   });
 
   @override
@@ -402,6 +400,7 @@ class CourseCard extends StatelessWidget {
     final bool done = course['done'] == true;
     final String code = course['code'] as String;
     // Cek status langsung dari CourseState
+    final courseState = context.watch<CourseState>(); 
     final bool isFav = courseState.isFavorite(code);
 
     return Card(
@@ -425,7 +424,9 @@ class CourseCard extends StatelessWidget {
           
           if (result != null) {
             // Panggil method dari state langsung
-            courseState.toggleFavorite(code); 
+            if (context.mounted) {
+              context.read<CourseState>().toggleFavorite(code);
+            }
             messenger.showSnackBar(
               SnackBar(
                 content: Text('$code ${result ? 'ditambahkan ke' : 'dihapus dari'} favorite!'),
@@ -474,7 +475,7 @@ class CourseCard extends StatelessWidget {
                         ),
                         onPressed: () {
                           // Panggil method dari state langsung
-                          courseState.toggleFavorite(code);
+                          context.read<CourseState>().toggleFavorite(code);
                         },
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -669,14 +670,12 @@ class CourseGrid extends StatelessWidget {
   final List<dynamic> courses;
   final String nama;
   final String nim;
-  final CourseState courseState; // ← GANTI favorites & onToggleFavorite
 
   const CourseGrid({
     super.key,
     required this.courses,
     required this.nama,
     required this.nim,
-    required this.courseState, // ← Wajib
   });
 
   int _columnsFor(double width) {
@@ -714,7 +713,6 @@ class CourseGrid extends StatelessWidget {
                       course: course,
                       nama: nama,
                       nim: nim,
-                      courseState: courseState, // ← Kirim object
                     );
                   },
                 );
@@ -1034,12 +1032,9 @@ class CoursesTab extends StatefulWidget {
 }
 
 class _CoursesTabState extends State<CoursesTab> {
-  // ─── GANTI _favorites DAN _toggleFavorite DENGAN INI ───
-  final CourseState _courseState = CourseState();
 
   @override
   void dispose() {
-    _courseState.dispose();
     super.dispose();
   }
 
@@ -1057,11 +1052,18 @@ class _CoursesTabState extends State<CoursesTab> {
             Text('${widget.nama} - ${widget.nim}',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
+            Consumer<CourseState>(
+              builder: (context, state, child) {
+                return Text(
+                  'Total Favorite: ${state.favorites.length}',
+                  style: const TextStyle(fontSize: 16, color: Colors.pink),
+                );
+              },
+            ),
             CourseGrid(
               courses: widget.courses,
               nama: widget.nama,
               nim: widget.nim,
-              courseState: _courseState, // ← Kirim object CourseState
             ),
           ],
         ),
