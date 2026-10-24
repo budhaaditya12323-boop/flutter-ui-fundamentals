@@ -6,6 +6,7 @@ import 'screen/layouts/compact_layout.dart';
 import 'screen/layouts/expanded_layout.dart';
 import 'screen/layouts/medium_layout.dart';
 import 'course_state.dart'; // ← import CourseState
+import 'models/course.dart';
 
 void main() {
   runApp(
@@ -20,7 +21,6 @@ void main() {
 Future<Map<String, dynamic>> loadStudentData() async {
   final jsonString = await rootBundle.loadString(
     'assets/data/student_data.json',
-    //'assets/data/student_dataa.json', -- simulasi kasus json salah direktori
   );
   return jsonDecode(jsonString) as Map<String, dynamic>;
 }
@@ -134,7 +134,7 @@ class DetailPage extends StatelessWidget {
 class MainShell extends StatefulWidget {
   final String nama;
   final String nim;
-  final List<dynamic> courses;
+  final List<Course> courses;
 
   const MainShell({
     super.key,
@@ -277,10 +277,14 @@ class _DashboardPageState extends State<DashboardPage> {
           // ─── DATA ───
           final data = snapshot.data!;
           final student = data['student'] as Map<String, dynamic>;
-          final courses = data['courses'] as List<dynamic>;
+          final coursesJson = data['courses'] as List<dynamic>;
 
           final String nim = student['nim'] as String;
           final String nama = student['name'] as String;
+
+          final List<Course> courses = coursesJson
+            .map((json) => Course.fromJson(json as Map<String, dynamic>))
+            .toList();
 
           return MainShell(
             nama: nama,
@@ -384,7 +388,7 @@ Widget buildStatCard(String value, String label, IconData icon) {
 }
 
 class CourseCard extends StatelessWidget {
-  final Map<String, dynamic> course;
+  final Course course;
   final String nama;
   final String nim;
 
@@ -397,8 +401,8 @@ class CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool done = course['done'] == true;
-    final String code = course['code'] as String;
+    final bool done = course.done == true;
+    final String code = course.code;
     // Cek status langsung dari CourseState
     final courseState = context.watch<CourseState>(); 
     final bool isFav = courseState.isFavorite(code);
@@ -438,7 +442,7 @@ class CourseCard extends StatelessWidget {
         onLongPress: () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Info: ${course['title']} — ${course['credits']} SKS'),
+              content: Text('Info: ${course.title} — ${course.credits} SKS'),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -485,7 +489,7 @@ class CourseCard extends StatelessWidget {
                 ],
               ),
               Text(
-                course['title'] as String,
+                course.title,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -497,7 +501,7 @@ class CourseCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${course['credits']} SKS',
+                    '${course.credits} SKS',
                     style: const TextStyle(fontSize: 12),
                   ),
                   Text(
@@ -519,7 +523,7 @@ class CourseCard extends StatelessWidget {
 }
 
 class CourseDetailPage extends StatefulWidget {
-  final Map<String, dynamic> course;
+  final Course course;
   final String nama;
   final String nim;
   final bool isFavorite;   // ← terima state awal
@@ -550,11 +554,11 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     final course = widget.course;
     final nama = widget.nama;
     final nim = widget.nim;
-    final bool done = course['done'] == true;
+    final bool done = course.done == true;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(course['title'] as String),
+        title: Text(course.title),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -593,14 +597,14 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      course['title'] as String,
+                      course.title,
                       style: const TextStyle(
                           fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    Text('Code: ${course['code']}'),
-                    Text('Credits: ${course['credits']} SKS'),
-                    Text('Instructor: ${course['instructor']}'),
+                    Text('Code: ${course.code}'),
+                    Text('Credits: ${course.credits} SKS'),
+                    Text('Instructor: ${course.instructor}'),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -667,7 +671,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
 // ─── TAHAP 5: CourseGrid Responsif ───
 class CourseGrid extends StatelessWidget {
-  final List<dynamic> courses;
+  final List<Course> courses;
   final String nama;
   final String nim;
 
@@ -686,7 +690,7 @@ class CourseGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int selesai = courses.where((c) => c['done'] == true).length;
+    final int selesai = courses.where((c) => c.done).length;
 
     return Card(
       child: Padding(
@@ -708,7 +712,7 @@ class CourseGrid extends StatelessWidget {
                   ),
                   itemCount: courses.length,
                   itemBuilder: (context, index) {
-                    final course = courses[index] as Map<String, dynamic>;
+                    final course = courses[index];
                     return CourseCard(
                       course: course,
                       nama: nama,
@@ -1016,7 +1020,7 @@ class ProfileTab extends StatelessWidget {
 
 
 class CoursesTab extends StatefulWidget {
-  final List<dynamic> courses;
+  final List<Course> courses;
   final String nama;
   final String nim;
 
