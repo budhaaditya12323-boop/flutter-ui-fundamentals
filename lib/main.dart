@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
+import 'services/course_service.dart';
 import 'package:provider/provider.dart'; // ← TAMBAHKAN INI
 import 'screen/layouts/compact_layout.dart';
 import 'screen/layouts/expanded_layout.dart';
@@ -18,12 +17,12 @@ void main() {
 }
 
 // ─── Baca JSON ───
-Future<Map<String, dynamic>> loadStudentData() async {
-  final jsonString = await rootBundle.loadString(
-    'assets/data/student_data.json',
-  );
-  return jsonDecode(jsonString) as Map<String, dynamic>;
-}
+// Future<Map<String, dynamic>> loadStudentData() async {
+//   final jsonString = await rootBundle.loadString(
+//     'assets/data/student_data.json',
+//   );
+//   return jsonDecode(jsonString) as Map<String, dynamic>;
+// }
 
 // ─── MyApp ───
 class MyApp extends StatelessWidget {
@@ -245,11 +244,12 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   late Future<Map<String, dynamic>> studentFuture;
+  final CourseService _courseService = CourseService();
 
   @override
   void initState() {
     super.initState();
-    studentFuture = loadStudentData();
+    studentFuture = _courseService.loadData(); 
   }
 
   @override
@@ -283,8 +283,8 @@ class _DashboardPageState extends State<DashboardPage> {
           final String nama = student['name'] as String;
 
           final List<Course> courses = coursesJson
-            .map((json) => Course.fromJson(json as Map<String, dynamic>))
-            .toList();
+              .map((json) => Course.fromJson(json as Map<String, dynamic>))
+              .toList();
 
           return MainShell(
             nama: nama,
