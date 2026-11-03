@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/course_service.dart';
+import 'repositories/course_repository.dart';
 import 'package:provider/provider.dart'; // ← TAMBAHKAN INI
 import 'screen/layouts/compact_layout.dart';
 import 'screen/layouts/expanded_layout.dart';
@@ -244,55 +245,39 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   late Future<Map<String, dynamic>> studentFuture;
-  final CourseService _courseService = CourseService();
+  late Future<List<Course>> coursesFuture;
 
   @override
   void initState() {
     super.initState();
-    studentFuture = _courseService.loadData(); 
+    final repository = CourseRepository(CourseService());
+    studentFuture = repository.getStudent();
+    coursesFuture = repository.getCourses();
   }
 
   @override
   Widget build(BuildContext context) {
-    // final size = MediaQuery.of(context).size;
-    // final orientation = MediaQuery.of(context).orientation;
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: studentFuture,
-        builder: (context, snapshot) {
+    return FutureBuilder<Map<String, dynamic>>(
+      future: studentFuture,
+      builder: (context, studentSnapshot) {
+        if (!studentSnapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-          // ─── LOADING ───
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        return FutureBuilder<List<Course>>(
+          future: coursesFuture,
+          builder: (context, courseSnapshot) {
+            if (!courseSnapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-          // ─── ERROR ───
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Gagal memuat data: ${snapshot.error}'),
+            final student = studentSnapshot.data!;
+            final courses = courseSnapshot.data!;
+
+            return MainShell(
+              nama: student['name'] ?? '-',
+              nim: student['nim'] ?? '-',
+              courses: courses,
             );
           }
-
-          // ─── DATA ───
-          final data = snapshot.data!;
-          final student = data['student'] as Map<String, dynamic>;
-          final coursesJson = data['courses'] as List<dynamic>;
-
-          final String nim = student['nim'] as String;
-          final String nama = student['name'] as String;
-
-          final List<Course> courses = coursesJson
-              .map((json) => Course.fromJson(json as Map<String, dynamic>))
-              .toList();
-
-          return MainShell(
-            nama: nama,
-            nim: nim,
-            courses: courses,
-          );
-        },
-      ),
+        );
+      }
     );
   }
 }
