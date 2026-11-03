@@ -21,7 +21,7 @@ class CourseProvider extends ChangeNotifier {
     } else {
       _favorites.add(code);
     }
-    notifyListeners();
+    notifyListeners(); //Jika tidak ada, ikon tidak akan berubah ketika ditekan
   }
 
   Future<void> loadCourses() async {

@@ -6,6 +6,9 @@ class CourseService {
   Future<Map<String, dynamic>> loadData() async {
     final jsonString = await rootBundle.loadString(
       'assets/data/student_data.json',
+
+      // simulasi nama file JSON yang salah untuk menguji error handling
+      // 'assets/data/course_datddda.json',
     );
     return jsonDecode(jsonString) as Map<String, dynamic>;
   }

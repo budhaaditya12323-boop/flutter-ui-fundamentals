@@ -71,8 +71,9 @@ class _FeedbackFormState extends State<FeedbackForm> {
 
     final messenger = ScaffoldMessenger.of(context);
 
-    // ─── Simulasi loading 2 detik ───
     await Future.delayed(const Duration(seconds: 2));
+    //jika pengecekan mounted tidak ada, maka akan muncul error "setState() called after dispose()"
+    if (!mounted) return;
 
     setState(() => _isLoading = false);  // ← sembunyikan loading
 
