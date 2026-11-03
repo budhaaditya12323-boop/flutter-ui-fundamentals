@@ -5,25 +5,19 @@ import 'package:provider/provider.dart'; // ← TAMBAHKAN INI
 import 'screen/layouts/compact_layout.dart';
 import 'screen/layouts/expanded_layout.dart';
 import 'screen/layouts/medium_layout.dart';
-import 'course_state.dart'; // ← import CourseState
+import 'course_provider.dart'; // ← import CourseProvider
 import 'models/course.dart';
 
 void main() {
+  final courseService = CourseService();
+  final courseRepository = CourseRepository(courseService);
   runApp(
     ChangeNotifierProvider(
-      create: (_) => CourseState(), // ← PROVIDER CourseState
+      create: (_) => CourseProvider(courseRepository),
       child: const MyApp(),
     ),
   );
 }
-
-// ─── Baca JSON ───
-// Future<Map<String, dynamic>> loadStudentData() async {
-//   final jsonString = await rootBundle.loadString(
-//     'assets/data/student_data.json',
-//   );
-//   return jsonDecode(jsonString) as Map<String, dynamic>;
-// }
 
 // ─── MyApp ───
 class MyApp extends StatelessWidget {
@@ -134,13 +128,11 @@ class DetailPage extends StatelessWidget {
 class MainShell extends StatefulWidget {
   final String nama;
   final String nim;
-  final List<Course> courses;
 
   const MainShell({
     super.key,
     required this.nama,
     required this.nim,
-    required this.courses,
   });
 
   @override
@@ -153,9 +145,8 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      HomeTab(nama: widget.nama, nim: widget.nim, courses: widget.courses),
+      HomeTab(nama: widget.nama, nim: widget.nim),
       CoursesTab(
-        courses: widget.courses,
         nama: widget.nama,
         nim: widget.nim,
       ),
@@ -252,32 +243,47 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     final repository = CourseRepository(CourseService());
     studentFuture = repository.getStudent();
-    coursesFuture = repository.getCourses();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CourseProvider>().loadCourses();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: studentFuture,
-      builder: (context, studentSnapshot) {
-        if (!studentSnapshot.hasData) return const Center(child: CircularProgressIndicator());
-
-        return FutureBuilder<List<Course>>(
-          future: coursesFuture,
-          builder: (context, courseSnapshot) {
-            if (!courseSnapshot.hasData) return const Center(child: CircularProgressIndicator());
-
-            final student = studentSnapshot.data!;
-            final courses = courseSnapshot.data!;
-
-            return MainShell(
-              nama: student['name'] ?? '-',
-              nim: student['nim'] ?? '-',
-              courses: courses,
-            );
+    return Scaffold(
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: studentFuture,
+        builder: (context, studentSnapshot) {
+          if (studentSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
           }
-        );
-      }
+          if (studentSnapshot.hasError) {
+            return Center(child: Text('Gagal memuat identitas: ${studentSnapshot.error}'));
+          }
+
+          final student = studentSnapshot.data!;
+          final nama = student['name'] as String? ?? '-';
+          final nim = student['nim'] as String? ?? '-';
+
+          return Consumer<CourseProvider>(
+            builder: (context, provider, child) {
+              if (provider.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (provider.error != null) {
+                return Center(child: Text('Gagal memuat data: ${provider.error}'));
+              }
+
+              return MainShell(
+                nama: nama,
+                nim: nim,
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -389,7 +395,7 @@ class CourseCard extends StatelessWidget {
     final bool done = course.done == true;
     final String code = course.code;
     // Cek status langsung dari CourseState
-    final courseState = context.watch<CourseState>(); 
+    final courseState = context.watch<CourseProvider>(); 
     final bool isFav = courseState.isFavorite(code);
 
     return Card(
@@ -414,7 +420,7 @@ class CourseCard extends StatelessWidget {
           if (result != null) {
             // Panggil method dari state langsung
             if (context.mounted) {
-              context.read<CourseState>().toggleFavorite(code);
+              context.read<CourseProvider>().toggleFavorite(code);
             }
             messenger.showSnackBar(
               SnackBar(
@@ -464,7 +470,7 @@ class CourseCard extends StatelessWidget {
                         ),
                         onPressed: () {
                           // Panggil method dari state langsung
-                          context.read<CourseState>().toggleFavorite(code);
+                          context.read<CourseProvider>().toggleFavorite(code);
                         },
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -656,13 +662,11 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
 // ─── TAHAP 5: CourseGrid Responsif ───
 class CourseGrid extends StatelessWidget {
-  final List<Course> courses;
   final String nama;
   final String nim;
 
   const CourseGrid({
     super.key,
-    required this.courses,
     required this.nama,
     required this.nim,
   });
@@ -675,6 +679,7 @@ class CourseGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final courses = context.watch<CourseProvider>().courses;
     final int selesai = courses.where((c) => c.done).length;
 
     return Card(
@@ -1003,29 +1008,15 @@ class ProfileTab extends StatelessWidget {
   }
 }
 
-
-class CoursesTab extends StatefulWidget {
-  final List<Course> courses;
+class CoursesTab extends StatelessWidget { 
   final String nama;
   final String nim;
 
   const CoursesTab({
     super.key,
-    required this.courses,
     required this.nama,
     required this.nim,
   });
-
-  @override
-  State<CoursesTab> createState() => _CoursesTabState();
-}
-
-class _CoursesTabState extends State<CoursesTab> {
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1038,10 +1029,10 @@ class _CoursesTabState extends State<CoursesTab> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text('${widget.nama} - ${widget.nim}',
+            Text('$nama - $nim',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            Consumer<CourseState>(
+            Consumer<CourseProvider>(
               builder: (context, state, child) {
                 return Text(
                   'Total Favorite: ${state.favorites.length}',
@@ -1049,11 +1040,7 @@ class _CoursesTabState extends State<CoursesTab> {
                 );
               },
             ),
-            CourseGrid(
-              courses: widget.courses,
-              nama: widget.nama,
-              nim: widget.nim,
-            ),
+            CourseGrid(nama: nama, nim: nim), // ← Hapus parameter courses
           ],
         ),
       ),
@@ -1061,13 +1048,11 @@ class _CoursesTabState extends State<CoursesTab> {
   }
 }
 
-
 class HomeTab extends StatelessWidget {
   final String nama;
   final String nim;
-  final List<dynamic> courses;
 
-  const HomeTab({super.key, required this.courses, required this.nama, required this.nim});
+  const HomeTab({super.key, required this.nama, required this.nim});
 
   @override
   Widget build(BuildContext context) {
