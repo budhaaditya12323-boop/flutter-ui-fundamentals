@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'tabs/home_tab.dart';
 import 'tabs/course_tab.dart';
 import 'tabs/profile_tab.dart';
+import 'tabs/favorite_tab.dart';
 
 class MainShell extends StatefulWidget {
   final String nama;
@@ -25,6 +26,7 @@ class _MainShellState extends State<MainShell> {
     final List<Widget> pages = [
       HomeTab(nama: widget.nama, nim: widget.nim),
       CoursesTab(nama: widget.nama, nim: widget.nim,),
+      FavoritesPage(nama: widget.nama, nim: widget.nim),
       ProfileTab(nama: widget.nama, nim: widget.nim),
     ];
 
@@ -66,6 +68,11 @@ class _MainShellState extends State<MainShell> {
                     label: Text('Courses'),
                   ),
                   NavigationRailDestination(
+                    icon: Icon(Icons.favorite_border),
+                    selectedIcon: Icon(Icons.favorite),
+                    label: Text('Favorites'),
+                  ),
+                  NavigationRailDestination(
                     icon: Icon(Icons.person_outline),
                     selectedIcon: Icon(Icons.person),
                     label: Text('Profile'),
@@ -92,6 +99,11 @@ class _MainShellState extends State<MainShell> {
       icon: Icon(Icons.school_outlined),
       selectedIcon: Icon(Icons.school),
       label: 'Courses',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.favorite_border),
+      selectedIcon: Icon(Icons.favorite),
+      label: 'Favorites',
     ),
     NavigationDestination(
       icon: Icon(Icons.person_outline),
