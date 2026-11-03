@@ -39,10 +39,17 @@ class FavoritesPage extends StatelessWidget {
               final course = favoriteCourses[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: CourseCard(
-                  course: course,
-                  nama: nama,
-                  nim: nim,
+                child: 
+                Column(
+                  children: [
+                    Text('$nama - $nim', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    CourseCard(
+                      course: course,
+                      nama: nama,
+                      nim: nim,
+                    ),
+                  ],
                 ),
               );
             },
