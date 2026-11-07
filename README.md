@@ -27,6 +27,34 @@ Aplikasi ini menerapkan prinsip *Separation of Concerns* dengan struktur folder 
 `UI (Screens/Widgets)` -> `Provider` -> `Repository` -> `Service (JSON)`
 UI tidak memanggil Service secara langsung.
 
+---
+
+## Dokumentasi REST API
+
+Aplikasi Course Data Manager kini terintegrasi dengan REST API untuk mengambil data course secara *real-time*. Berikut adalah detail endpoint yang digunakan:
+
+### Informasi Endpoint
+- **Base URL:** `https://course-api-pearl.vercel.app`
+- **Endpoint (GET List Course):** `https://course-api-pearl.vercel.app/courses`
+- **HTTP Method:** `GET`
+- **Status Code (Sukses):** `200 OK`
+
+### Struktur Response Body (JSON)
+Response dari endpoint ini berupa *Array of Objects* (List) yang merepresentasikan data course. Berikut adalah minimal empat field utama yang ditemukan:
+
+1. `id` (Integer): ID unik untuk setiap course.
+2. `code` (String): Kode mata kuliah (contoh: "MOB01").
+3. `title` (String): Judul/nama mata kuliah.
+4. `credits` (Integer): Jumlah SKS.
+5. `status` (String): Status course (contoh: "planned", "active", "done").
+
+### Catatan Integrasi
+- Pengambilan data menggunakan package `http`.
+- Proses *fetching* API dilakukan di dalam `CourseService`, kemudian di-*parsing* menjadi object `Course`.
+- Data mengalir dari Service -> Repository -> Provider -> UI.
+
+---
+
 ## Cara Menjalankan Proyek
 1. Pastikan Flutter SDK sudah terinstal di Device masing-masing
 2. Jalankan perintah berikut di terminal:
