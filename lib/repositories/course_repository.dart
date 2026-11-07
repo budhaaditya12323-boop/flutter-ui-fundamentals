@@ -7,15 +7,6 @@ class CourseRepository {
   CourseRepository(this.service);
 
   Future<List<Course>> getCourses() {
-    return service.loadCourses();
+    return service.fetchCourses();
   }
-
-  Future<Map<String, dynamic>> getData() {
-    return service.loadData();
-  }
-
-  Future<Map<String, dynamic>> getStudent() async {
-    final data = await getData();
-    return data['student'] as Map<String, dynamic>;
-    }
 }
