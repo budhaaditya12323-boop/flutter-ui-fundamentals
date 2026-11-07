@@ -15,6 +15,9 @@ class CoursesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final courses = context.watch<CourseProvider>().courses;
+    final int selesai = courses.where((c) => c.status == 'done').length;
+    final int aktif = courses.where((c) => c.status == 'active').length;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Course Explorer - Courses'),
@@ -27,6 +30,8 @@ class CoursesTab extends StatelessWidget {
             Text('$nama - $nim',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
+            Text('$selesai dari ${courses.length} topik selesai, $aktif sedang aktif',
+                style: const TextStyle(fontSize: 16, color: Colors.blue)),
             Consumer<CourseProvider>(
               builder: (context, state, child) {
                 return Text(

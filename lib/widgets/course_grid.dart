@@ -22,14 +22,13 @@ class CourseGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final courses = context.watch<CourseProvider>().courses;
-    final int selesai = courses.where((c) => c.done).length;
+
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Text('$selesai dari ${courses.length} topik selesai'),
             const SizedBox(height: 12),
             LayoutBuilder(
               builder: (context, constraints) {
@@ -40,7 +39,7 @@ class CourseGrid extends StatelessWidget {
                     crossAxisCount: _columnsFor(constraints.maxWidth),
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 1.6,
+                    childAspectRatio: 2,
                   ),
                   itemCount: courses.length,
                   itemBuilder: (context, index) {

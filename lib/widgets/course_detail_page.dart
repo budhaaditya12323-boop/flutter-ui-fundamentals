@@ -34,7 +34,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     final course = widget.course;
     final nama = widget.nama;
     final nim = widget.nim;
-    final bool done = course.done == true;
 
     return Scaffold(
       appBar: AppBar(
@@ -84,22 +83,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                     const SizedBox(height: 8),
                     Text('Code: ${course.code}'),
                     Text('Credits: ${course.credits} SKS'),
-                    Text('Instructor: ${course.instructor}'),
+                    Icon(Icons.check_circle_rounded, size: 40, color: course.status == 'planned' ? const Color(0xFF9E9E9E) : course.status == 'done' ? Colors.green : Colors.orange),
+                    Text('Status: ${course.status}'),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Icon(
-                          done ? Icons.check_circle : Icons.schedule,
-                          color: done ? Colors.green : Colors.orange,
-                        ),
                         const SizedBox(width: 8),
-                        Text(
-                          done ? 'Selesai' : 'Belum Selesai',
-                          style: TextStyle(
-                            color: done ? Colors.green : Colors.orange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ],
                     ),
                   ],

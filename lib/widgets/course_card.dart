@@ -18,7 +18,6 @@ class CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool done = course.done == true;
     final String code = course.code;
     // Cek status langsung dari CourseState
     final courseState = context.watch<CourseProvider>(); 
@@ -73,35 +72,32 @@ class CourseCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(
-                    done ? Icons.check_circle : Icons.circle_outlined,
-                    color: done ? Colors.green : Colors.grey,
-                  ),
                   Row(
                     children: [
                       Text(
                         code,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: Colors.grey,
+                                      fontWeight: FontWeight.bold,
+                                      ),
                       ),
-                      const SizedBox(width: 4),
-                      IconButton(
-                        icon: Icon(
-                          isFav ? Icons.favorite : Icons.favorite_border,
-                          color: isFav ? Colors.pink : Colors.grey,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          // Panggil method dari state langsung
-                          context.read<CourseProvider>().toggleFavorite(code);
-                        },
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.check_circle_rounded, size: 20, color: course.status == 'planned' ? const Color(0xFF9E9E9E) : course.status == 'done' ? Colors.green : Colors.orange),
                     ],
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? Colors.pink : Colors.grey,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      // Panggil method dari state langsung
+                      context.read<CourseProvider>().toggleFavorite(code);
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
@@ -120,14 +116,6 @@ class CourseCard extends StatelessWidget {
                   Text(
                     '${course.credits} SKS',
                     style: const TextStyle(fontSize: 12),
-                  ),
-                  Text(
-                    done ? 'Selesai' : 'Belum',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: done ? Colors.green : Colors.grey,
-                      fontWeight: FontWeight.bold,
-                    ),
                   ),
                 ],
               ),
